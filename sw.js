@@ -2,7 +2,7 @@
    Strategie: App-Dateien werden zwischengespeichert, damit die App offline
    startet. Alle Anfragen an Google (Anmeldung, Drive, Kalender) gehen immer
    direkt ins Netz und werden nie gecacht. */
-const CACHE = "my-todo-organizer-v29";
+const CACHE = "my-todo-organizer-v30";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
