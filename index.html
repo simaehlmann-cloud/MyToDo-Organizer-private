@@ -88,12 +88,20 @@ label.fld{display:block;font-size:.76rem;color:var(--muted);margin-bottom:4px;fo
 .badge.pri-hoch{color:var(--danger)}.badge.pri-mittel{color:var(--warn)}.badge.pri-niedrig{color:var(--ok)}
 
 .tt{display:grid;grid-template-columns:56px repeat(var(--cols,5),minmax(84px,1fr));gap:4px;min-width:560px}
+.tt-t.brk{font-size:.62rem;font-style:italic}
 .tt-h{font-weight:700;text-align:center;padding:7px;background:var(--bg);border-radius:5px;font-size:.85rem}
 .tt-h.today{background:var(--primary);color:#fff}
 .tt-t{text-align:right;padding-right:7px;font-size:.68rem;color:var(--muted);align-self:center;line-height:1.3}
 .tt-s{background:var(--bg);border:1px solid var(--border);border-radius:5px;min-height:52px;padding:6px;font-size:.78rem;cursor:pointer;overflow:hidden}
 .tt-s:hover{outline:2px solid var(--primary)}
-.tt-s.full{color:#fff}
+.tt-s.full{color:#111827;border-width:1px}
+.tt-s.dbl{display:flex;flex-direction:column;justify-content:center}
+/* Pausenzeile: flacher als eine Stunde, fuer Aufsichten anklickbar. */
+.tt-b{background:transparent;border:1px dashed var(--border);border-radius:5px;min-height:26px;
+  padding:3px 6px;font-size:.7rem;cursor:pointer;overflow:hidden;display:flex;align-items:center}
+.tt-b:hover{outline:2px solid var(--primary)}
+.tt-b .add{color:var(--muted);opacity:.5;font-size:.9rem;line-height:1}
+.tt-b.set{background:#fef3c7;border-style:solid;border-color:#fcd34d;color:#111827;font-weight:600}
 .tt-s .subj{font-weight:700;line-height:1.2}
 .tt-s .room{opacity:.85;font-size:.68rem;margin-top:2px}
 
@@ -159,6 +167,9 @@ dialog .ft{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;backg
 .qa{display:flex;gap:9px}
 .qa input{font-size:16px}
 .qa-bar{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.qa-due{display:flex;align-items:center;gap:10px;margin-top:11px}
+.qa-due label.fld{margin:0;flex-shrink:0}
+.qa-due input{font-size:16px}
 #t-details{margin-top:13px;padding-top:13px;border-top:1px solid var(--border);margin-bottom:0}
 .brand{display:flex;align-items:center;gap:14px;margin-bottom:20px}
 .brand-mark{width:46px;height:46px;border-radius:13px;flex-shrink:0;display:grid;place-items:center;color:#fff;
@@ -198,7 +209,9 @@ body.sb-inset #main{padding-top:calc(16px + var(--sb-h,26px))}
 .week-day.today .wd-head .hol-name{color:#fef9c3}
 .wd-body{padding:9px 12px}
 .wd-lessons{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
-.wd-lesson{padding:3px 9px;border-radius:6px;color:#fff;font-size:.73rem;font-weight:600;white-space:nowrap}
+.wd-lesson{padding:3px 9px;border-radius:6px;color:#111827;font-size:.73rem;font-weight:600;white-space:nowrap}
+.wd-lesson.past{text-decoration:line-through;opacity:.45}
+.wd-lesson.duty{background:#fef3c7;border:1px solid #fcd34d}
 .wd-task{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.87rem;cursor:pointer;border-left:3px solid transparent;padding-left:8px}
 .wd-task:hover{background:var(--bg);border-radius:5px}
 .wd-task .pt{color:var(--muted);font-size:.72rem;white-space:nowrap}
@@ -223,6 +236,9 @@ details.folder{margin-top:9px}
 details.folder summary{cursor:pointer;font-weight:600;padding:8px 10px;background:var(--bg);border-radius:7px;user-select:none}
 details.folder summary:hover{background:var(--border)}
 details.folder>div{padding:9px 4px 4px}
+.swatches{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.swatches button{width:34px;height:30px;border-radius:6px;border:2px solid var(--border);cursor:pointer;padding:0}
+.swatches button.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--text)}
 .ub-slot{padding:9px 11px;border:1px solid var(--border);border-left:3px solid var(--muted);border-radius:8px;margin-bottom:8px;background:var(--card);cursor:pointer}
 .ub-slot.set{border-left-color:var(--primary)}
 .ub-slot.done{opacity:.6}
@@ -235,7 +251,7 @@ details.folder>div{padding:9px 4px 4px}
 .cal-c .gdot{width:5px;height:5px;border-radius:1px}
 @media print{
   :root{--bg:#fff;--card:#fff;--side:#fff;--text:#111827;--muted:#4b5563;--border:#d1d5db;--shadow:none}
-  #sidebar,.qa,.qa-bar,.filters,#f-search,.actions,.btn,.btn-sm,#toast,dialog{display:none!important}
+  #sidebar,.qa,.qa-bar,.qa-due,.filters,#f-search,.actions,.btn,.btn-sm,#toast,dialog{display:none!important}
   body{display:block;height:auto;overflow:visible;background:#fff}
   #main{overflow:visible;padding:0}
   .card{box-shadow:none;border:1px solid #d1d5db;break-inside:avoid}
@@ -259,6 +275,7 @@ details.folder>div{padding:9px 4px 4px}
   .banner{background:#1e3a8a;color:#bfdbfe}
   .meta .over{color:#f87171}.badge.pri-hoch{color:#f87171}
   .subs .bar,.corr .bar{background:#334155}
+  .tt-b.set{background:#f5deb0}
 }
 </style>
 </head>
@@ -321,15 +338,17 @@ details.folder>div{padding:9px 4px 4px}
         <button class="btn-sm" id="btn-quick-tom">Morgen</button>
         <button class="btn-sm" id="btn-quick-fu2">Wiedervorlage +2 Wo</button>
         <button class="btn-sm" id="btn-quick-fu4">Wiedervorlage +4 Wo</button>
-        <button class="btn-sm" id="btn-tpl-ka">📝 Klassenarbeit planen</button>
         <button class="btn-sm" id="btn-ai-task" title="Eingabe in Alltagssprache auswerten">✨ KI versteht’s</button>
         <button class="btn-sm" id="btn-more" aria-expanded="false">Details ▾</button>
+      </div>
+      <div class="qa-due">
+        <label class="fld" for="t-date">Fällig am</label>
+        <input type="date" id="t-date">
       </div>
       <div class="grid" id="t-details" hidden>
         <div><label class="fld" for="t-category">Kategorie</label><select id="t-category"></select></div>
         <div><label class="fld" for="t-prio">Priorität</label><select id="t-prio">
           <option value="niedrig">Niedrig</option><option value="mittel" selected>Mittel</option><option value="hoch">Hoch</option></select></div>
-        <div><label class="fld" for="t-date">Fällig am</label><input type="date" id="t-date"></div>
         <div><label class="fld" for="t-recurrence">Wiederholung</label><select id="t-recurrence">
           <option value="none">Keine</option><option value="daily">Täglich</option><option value="weekly">Wöchentlich</option>
           <option value="biweekly">Alle 2 Wochen</option><option value="monthly">Monatlich</option><option value="yearly">Jährlich</option></select></div>
@@ -339,6 +358,7 @@ details.folder>div{padding:9px 4px 4px}
         <div id="fld-gcal"><label class="fld">Google Kalender</label>
           <label style="display:flex;align-items:center;gap:9px;font-size:.88rem;cursor:pointer;padding:9px 0">
             <input type="checkbox" id="t-gcal"> Als Termin eintragen</label></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn-sm" id="btn-tpl-ka" style="width:100%">📝 Klassenarbeit planen</button></div>
       </div>
       <datalist id="group-list"></datalist>
     </div>
@@ -387,6 +407,11 @@ details.folder>div{padding:9px 4px 4px}
       <div class="grid">
         <div><label class="fld" for="tt-day">Tag</label><select id="tt-day"></select></div>
         <div><label class="fld" for="tt-slot">Stunde</label><select id="tt-slot"></select></div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:9px">
+          <label style="display:flex;align-items:center;gap:8px;font-size:.86rem;cursor:pointer;margin:0">
+            <input type="checkbox" id="tt-dbl" style="width:auto;margin:0">Doppelstunde
+          </label>
+        </div>
         <div><label class="fld" for="tt-subject">Fach</label><input type="text" id="tt-subject" placeholder="z. B. Mathematik"></div>
         <div><label class="fld" for="tt-room">Raum / Lehrkraft</label><input type="text" id="tt-room" placeholder="optional"></div>
       </div>
@@ -394,7 +419,8 @@ details.folder>div{padding:9px 4px 4px}
     </div>
     <div class="card" style="overflow-x:auto">
       <div class="tt" id="tt-grid"></div>
-      <p class="hint" style="margin:13px 0 0">Belegte Zelle antippen zum Bearbeiten oder Löschen, leere Zelle legt einen neuen Eintrag an.</p>
+      <p class="hint" style="margin:13px 0 0">Belegte Zelle antippen zum Bearbeiten oder Löschen, leere Zelle legt einen neuen Eintrag an.
+      Die gestrichelten Zeilen sind die Pausen zwischen den Stunden — dort lassen sich Aufsichten eintragen.</p>
     </div>
   </section>
 
@@ -402,7 +428,7 @@ details.folder>div{padding:9px 4px 4px}
   <section id="view-referendare" class="view">
     <h1>Referendarinnen &amp; Referendare</h1>
     <div class="card">
-      <p class="hint">Personen im Fachseminar mit Prüfungstermin verwalten. „Fristen anlegen“ erzeugt rückwärts gerechnete Aufgaben (Gutachten, letzter UB, Vorbesprechung) — Termine, die auf Ferien, Feiertage oder Wochenenden fallen, werden automatisch auf den davorliegenden Schultag vorgezogen. Die voreingestellten Wochenabstände bitte an die aktuellen APVO-Vorgaben anpassen.</p>
+      <p class="hint">Personen im Fachseminar mit Prüfungstermin verwalten. Zu Prüfung und GüA entsteht automatisch eine Vorbereitungsaufgabe eine Woche vorher; fällt sie auf Ferien, Feiertage oder ein Wochenende, rückt sie auf den davorliegenden Schultag vor. „Gutachten bis“ erzeugt eine Aufgabe genau zum Stichtag — eine Abgabefrist wird nicht verschoben.</p>
       <button class="btn" id="btn-add-ref">＋ Person anlegen</button>
     </div>
     <div id="ref-list"></div>
@@ -635,7 +661,7 @@ details.folder>div{padding:9px 4px 4px}
       <div class="feat"><div class="i">☁️</div><div><div class="t">Geräte-Synchronisation</div><div class="d">Der komplette Datenbestand liegt zusätzlich in einem verborgenen App-Ordner in Google Drive und wird zwischen PC, iPad und Handy abgeglichen — zugleich ein automatisches Backup.</div></div></div>
       <div class="feat"><div class="i">📆</div><div><div class="t">Wochenübersicht</div><div class="d">Startbildschirm mit Stundenplan und fälligen Aufgaben pro Tag, inklusive Ferien- und Feiertagsanzeige für Niedersachsen.</div></div></div>
       <div class="feat"><div class="i">📚</div><div><div class="t">Korrekturstapel</div><div class="d">Klassenarbeiten mit Zähler: abhaken, wie viele Arbeiten korrigiert sind, mit Fortschrittsbalken und Tagespensum bis zur Rückgabe.</div></div></div>
-      <div class="feat"><div class="i">🎓</div><div><div class="t">Referendars-Verwaltung</div><div class="d">Personen im Fachseminar mit Prüfungstermin; Fristen für Gutachten, letzten UB und Vorbesprechung werden automatisch rückwärts gerechnet. Unterrichtsbesuche wandern mit Fahrtzeit-Puffer in den Kalender.</div></div></div>
+      <div class="feat"><div class="i">🎓</div><div><div class="t">Referendars-Verwaltung</div><div class="d">Personen im Fachseminar mit Status, Prüfungstermin und Gutachtenfrist; Vorbereitungsaufgaben entstehen automatisch. Unterrichtsbesuche wandern mit Fahrtzeit-Puffer in den Kalender.</div></div></div>
       <div class="feat"><div class="i">💾</div><div><div class="t">Export und Import</div><div class="d">Vollständige Sicherung als JSON-Datei — diese lässt sich auch wieder importieren. Termine zusätzlich als .ics für den Import in Google Kalender, Apple Kalender oder Outlook; .ics dient nur der Ausgabe und kann nicht zurückgelesen werden.</div></div></div>
     </div>
 
@@ -730,13 +756,37 @@ details.folder>div{padding:9px 4px 4px}
     <div style="display:grid;gap:11px">
       <div><label class="fld" for="l-subject">Fach</label><input type="text" id="l-subject"></div>
       <div><label class="fld" for="l-room">Raum / Lehrkraft</label><input type="text" id="l-room"></div>
-      <div><label class="fld" for="l-color">Farbe</label><input type="color" id="l-color" style="width:100%;height:42px;padding:3px"></div>
+      <div>
+        <label class="fld">Farbe</label>
+        <div class="swatches" id="l-swatches"></div>
+        <input type="color" id="l-color" style="width:100%;height:42px;padding:3px" aria-label="Eigene Farbe">
+      </div>
+      <div id="l-dbl-row">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;margin:0">
+          <input type="checkbox" id="l-dbl" style="width:auto;margin:0">Doppelstunde (über zwei Stunden)
+        </label>
+      </div>
     </div>
   </div>
   <div class="ft">
     <button class="btn-sm danger" id="l-del">Löschen</button>
     <button class="btn-sm" id="l-cancel">Abbrechen</button>
     <button class="btn" id="l-save">Übernehmen</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-duty">
+  <div class="bd">
+    <h3 id="d-head">Aufsicht</h3>
+    <div style="display:grid;gap:11px">
+      <div><label class="fld" for="d-text">Eintrag</label><input type="text" id="d-text" list="duty-list" placeholder="z. B. Pausenaufsicht Hof"></div>
+      <datalist id="duty-list"></datalist>
+    </div>
+  </div>
+  <div class="ft">
+    <button class="btn-sm danger" id="d-del">Löschen</button>
+    <button class="btn-sm" id="d-cancel">Abbrechen</button>
+    <button class="btn" id="d-save">Übernehmen</button>
   </div>
 </dialog>
 
@@ -769,11 +819,26 @@ details.folder>div{padding:9px 4px 4px}
         <div><label class="fld" for="r-fach">Fach</label><input type="text" id="r-fach"></div>
         <div><label class="fld" for="r-school">Ausbildungsschule</label><input type="text" id="r-school"></div>
       </div>
+      <div>
+        <label class="fld" for="r-status">Status</label>
+        <input type="text" id="r-status" list="ref-status-list" placeholder="auswählen oder frei eintragen" autocomplete="off">
+        <datalist id="ref-status-list">
+          <option value="LiVD"></option>
+          <option value="QE/VD"></option>
+          <option value="QE/SD"></option>
+          <option value="QE/AP"></option>
+        </datalist>
+      </div>
       <div><label class="fld" for="r-mail">E-Mail (optional)</label><input type="email" id="r-mail" placeholder="für UB-Bestätigungen und Erinnerungen"></div>
       <div><label class="fld" for="r-exam">Prüfungstermin (UPP)</label><input type="date" id="r-exam"></div>
       <div><label class="fld" for="r-exam-time">Prüfungszeit (optional)</label><input type="time" id="r-exam-time"></div>
       <div><label class="fld" for="r-guea">GüA-Termin (optional)</label><input type="date" id="r-guea"></div>
       <div><label class="fld" for="r-guea-time">GüA-Zeit (optional)</label><input type="time" id="r-guea-time"></div>
+      <div>
+        <label class="fld" for="r-gut">Gutachten bis (optional)</label>
+        <input type="date" id="r-gut">
+        <p class="hint" style="margin:5px 0 0">Legt eine Aufgabe an, die an diesem Tag fällig ist.</p>
+      </div>
       <div>
         <label class="fld" for="r-note">Beobachtungsnotizen (allgemein)</label>
         <textarea id="r-note" rows="4" placeholder="Stichpunkte genügen — ✨ formuliert sie aus …"></textarea>
@@ -923,7 +988,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.25";
+const APP_VERSION = "1.26";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 const HINT_KEY = "my-todo-organizer-loginhint";
@@ -945,6 +1010,42 @@ const FEATURES = [
   { key:"reminders",   label:"Erinnerungen",         desc:"Benachrichtigung bei fälligen Aufgaben, solange die App geöffnet ist. Muss zusätzlich unten freigegeben werden." }
 ];
 
+/* Gedeckte Farben fuer den Stundenplan — hell genug fuer schwarze Schrift. */
+const TT_COLORS = ["#dbeafe","#dcfce7","#fef9c3","#fee2e2","#f3e8ff",
+                   "#ffedd5","#ccfbf1","#fce7f3","#e2e8f0","#ecfccb"];
+const TT_DEFAULT_COLOR = TT_COLORS[0];
+
+/* Relative Helligkeit; entscheidet, ob eine Farbe schon hell genug ist. */
+function hexLum(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+  if (!m) return 1;
+  const n = parseInt(m[1], 16);
+  return (0.2126*(n>>16 & 255) + 0.7152*(n>>8 & 255) + 0.0722*(n & 255)) / 255;
+}
+/* Kraeftige Farbe in einen hellen Ton derselben Familie ueberfuehren.
+   Bereits helle Farben bleiben unveraendert — dadurch ist die Umstellung
+   auch dann gefahrlos, wenn sie auf einem zweiten Geraet erneut laeuft. */
+function pastelize(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ""));
+  if (!m) return TT_DEFAULT_COLOR;
+  if (hexLum(hex) > 0.72) return hex.toLowerCase();
+  const n = parseInt(m[1], 16), mix = c => Math.round(c + (255 - c) * 0.78);
+  return "#" + [mix(n>>16 & 255), mix(n>>8 & 255), mix(n & 255)]
+    .map(v => v.toString(16).padStart(2, "0")).join("");
+}
+/* Einmalige Umstellung der bestehenden, kraeftigen Stundenplanfarben. */
+function migrateTtColors() {
+  if (state.settings.ttPastel) return;
+  let n = 0;
+  for (const l of state.lessons) {
+    const c = pastelize(l.color);
+    if (c !== l.color) { l.color = c; touch(l); n++; }
+  }
+  state.settings.ttPastel = true;
+  save();
+  if (n) console.info("Stundenplanfarben umgestellt:", n);
+}
+
 const DEFAULT_SLOTS = ["08:00-08:45","08:45-09:30","09:55-10:40","10:40-11:25","11:50-12:35","12:35-13:20","14:00-14:45","14:45-15:30"];
 
 /* Niedersächsische Schulferien bis Sommer 2027 (Quelle: Kultusministerium,
@@ -964,7 +1065,7 @@ const DEFAULT_STATE = () => ({
   version: 3,
   savedAt: 0,
   tombs: {},
-  tasks: [], lessons: [], shopping: [], shoppingLists: [], referendare: [],
+  tasks: [], lessons: [], duties: [], shopping: [], shoppingLists: [], referendare: [],
   categories: [
     // "school" steuert, ob Wiederholungen in dieser Kategorie Ferien und
     // Feiertage überspringen. Privates läuft in den Ferien normal weiter.
@@ -1017,6 +1118,7 @@ function normalizeState(p) {
     tombs: (s.tombs && typeof s.tombs === "object") ? s.tombs : {},
     tasks:       Array.isArray(s.tasks)       ? s.tasks       : [],
     lessons:     Array.isArray(s.lessons)     ? s.lessons     : [],
+    duties:      Array.isArray(s.duties)      ? s.duties      : [],
     shopping:    Array.isArray(s.shopping)    ? s.shopping    : [],
     shoppingLists: Array.isArray(s.shoppingLists) ? s.shoppingLists : [],
     referendare: Array.isArray(s.referendare) ? s.referendare : [],
@@ -1036,6 +1138,7 @@ function normalizeState(p) {
       weekDays: set.weekDays || (set.saturday ? "mosa" : d.settings.weekDays),
       holidays: Array.isArray(set.holidays) ? set.holidays : d.settings.holidays,
       skipHolidays: set.skipHolidays !== false,
+      ttPastel: !!set.ttPastel,
       autoCal: !!set.autoCal,
       calEventTime: /^\d{2}:\d{2}$/.test(set.calEventTime || "") ? set.calEventTime : d.settings.calEventTime,
       calRemindMin: Number.isFinite(set.calRemindMin) ? set.calRemindMin : d.settings.calRemindMin,
@@ -1115,7 +1218,7 @@ function restore(snap) {
   // damit der Geräteabgleich das Rückgängig nicht wieder rückgängig macht.
   const now = Date.now();
   state.tombs = state.tombs || {};
-  for (const k of ["tasks","lessons","shopping","shoppingLists","referendare","categories"]) {
+  for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"]) {
     for (const o of (state[k] || [])) { o.updatedAt = now; delete state.tombs[o.id]; }
   }
   save(); initUI(); renderAll(); toast("Wiederhergestellt.");
@@ -1153,6 +1256,7 @@ function mergeStates(a, b) {
     version: 3, savedAt: now,
     tasks:       mergeList(a.tasks, b.tasks),
     lessons:     mergeList(a.lessons, b.lessons),
+    duties:      mergeList(a.duties, b.duties),
     shopping:    mergeList(a.shopping, b.shopping),
     shoppingLists: mergeList(a.shoppingLists, b.shoppingLists),
     referendare: mergeList(a.referendare, b.referendare),
@@ -2297,7 +2401,6 @@ $("cal-today").onclick = () => { calCursor = new Date(); calSelected = todayISO(
 $("cal-add").onclick   = () => {
   switchTo("tasks");
   $("t-date").value = calSelected || todayISO();
-  if ($("t-details").hidden) $("btn-more").click();   // Datum sichtbar machen
   $("t-title").focus();
 };
 
@@ -2374,82 +2477,209 @@ function renderCalendarDay() {
 }
 
 /* ---------- Stundenplan ---------- */
+const hhmm = t => { const [h,m] = String(t||"").split(":").map(Number);
+  return (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0); };
+const slotStart = si => (state.settings.slots[si] || "").split("-")[0].trim();
+const slotEnd   = si => ((state.settings.slots[si] || "").split("-")[1] || "").trim();
+
+/* Zeilenfolge des Rasters: Stunden, dazwischen eine Pausenzeile,
+   wo die naechste Stunde spaeter beginnt als die vorige endet. */
+function ttRows() {
+  const rows = [];
+  state.settings.slots.forEach((time, si) => {
+    rows.push({ type:"slot", si, time });
+    const end = slotEnd(si), start = slotStart(si + 1);
+    if (si + 1 < state.settings.slots.length && end && start && hhmm(start) > hhmm(end))
+      rows.push({ type:"break", after: si, from: end, to: start });
+  });
+  return rows;
+}
+/* Nur Paare, die im Raster direkt aufeinanderfolgen, koennen eine
+   Doppelstunde bilden — ueber eine Pause hinweg waere sie irrefuehrend. */
+function canDouble(si) {
+  if (si + 1 >= state.settings.slots.length) return false;
+  const rows = ttRows();
+  const i = rows.findIndex(r => r.type === "slot" && r.si === si);
+  return i > -1 && rows[i+1] && rows[i+1].type === "slot" && rows[i+1].si === si + 1;
+}
+/* Gilt der Eintrag wirklich als Doppelstunde? Nur wenn das Stundenpaar
+   zusammenhaengt und die Folgestunde nicht selbst belegt ist. */
+function isDouble(l) {
+  return !!(l && l.span === 2 && canDouble(l.slot)
+    && !state.lessons.some(x => x.day === l.day && x.slot === l.slot + 1));
+}
+/* Stunde, die eine Rasterzelle belegt — auch als zweite Haelfte einer Doppelstunde. */
+function lessonAt(day, si) {
+  const own = state.lessons.find(l => l.day === day && l.slot === si);
+  if (own) return own;
+  const prev = state.lessons.find(l => l.day === day && l.slot === si - 1);
+  return isDouble(prev) ? prev : null;
+}
+
 function fillSlotSelects() {
   const sel = $("tt-slot"); const keepSlot = sel.value; sel.replaceChildren();
-  state.settings.slots.forEach((s,i) => sel.append(new Option(`${i+1}. Stunde (${s})`, i)));
+  const dbl = $("tt-dbl") && $("tt-dbl").checked;
+  if (dbl) {
+    state.settings.slots.forEach((_, i) => {
+      if (i % 2 || !canDouble(i)) return;
+      sel.append(new Option(`${i+1}.+${i+2}. Stunde (${slotStart(i)}–${slotEnd(i+1)})`, i));
+    });
+    if (!sel.options.length) sel.append(new Option("keine Paare möglich", ""));
+  } else {
+    state.settings.slots.forEach((s,i) => sel.append(new Option(`${i+1}. Stunde (${s})`, i)));
+  }
   if ([...sel.options].some(o => o.value === keepSlot)) sel.value = keepSlot;
 
   const day = $("tt-day"); const keepDay = day.value; day.replaceChildren();
   activeDays().forEach(d => day.append(new Option(DAY_NAMES[d], d)));
   if ([...day.options].some(o => o.value === keepDay)) day.value = keepDay;
 }
+$("tt-dbl").onchange = () => fillSlotSelects();
+
+/* Platz fuer einen neuen Eintrag schaffen: alles entfernen, was die
+   betroffenen Stunden belegt — auch eine Doppelstunde von oben herein. */
+function clearSlots(day, from, span) {
+  const hit = [];
+  for (let i = from; i < from + span; i++) {
+    const l = lessonAt(day, i);
+    if (l && hit.indexOf(l) === -1) hit.push(l);
+  }
+  hit.forEach(l => markDeleted(l.id));
+  state.lessons = state.lessons.filter(l => hit.indexOf(l) === -1);
+  return hit.length;
+}
 
 $("btn-add-lesson").onclick = () => {
   const subject = $("tt-subject").value.trim();
   if (!subject) return toast("Bitte ein Fach eingeben.");
+  if ($("tt-slot").value === "") return toast("Bitte eine Stunde wählen.");
   const day = +$("tt-day").value, slot = +$("tt-slot").value;
-  const prev = state.lessons.find(l => l.day === day && l.slot === slot);
-  if (prev) markDeleted(prev.id);
-  state.lessons = state.lessons.filter(l => !(l.day === day && l.slot === slot));
-  state.lessons.push({ id: uid(), day, slot, subject, room: $("tt-room").value.trim() || null, color: "#2563eb", createdAt: Date.now() });
-  save(); renderTimetable(); fillSubjectSelects(); updateStorageInfo();
+  const span = ($("tt-dbl").checked && canDouble(slot)) ? 2 : 1;
+  clearSlots(day, slot, span);
+  state.lessons.push({ id: uid(), day, slot, span, subject,
+    room: $("tt-room").value.trim() || null, color: TT_DEFAULT_COLOR, createdAt: Date.now() });
+  save(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo();
   $("tt-subject").value = ""; $("tt-room").value = "";
-  toast("Stunde eingetragen.");
+  toast(span === 2 ? "Doppelstunde eingetragen." : "Stunde eingetragen.");
 };
 
+/* Zellen werden ausdruecklich platziert, damit Doppelstunden ueber zwei
+   Zeilen reichen koennen, ohne alles Nachfolgende zu verschieben. */
 function renderTimetable() {
   if (!feat("timetable")) return;
   const g = $("tt-grid"); g.replaceChildren();
   const days = activeDays();
   g.style.setProperty("--cols", days.length);
   const todayDow = ((new Date().getDay() + 6) % 7) + 1;
+  const rows = ttRows();
 
-  g.append(el("div"));
-  days.forEach(d => g.append(el("div","tt-h" + (d === todayDow ? " today" : ""), DAY_SHORT[d])));
+  const corner = el("div"); corner.style.gridArea = "1 / 1"; g.append(corner);
+  days.forEach((d, ci) => {
+    const h = el("div","tt-h" + (d === todayDow ? " today" : ""), DAY_SHORT[d]);
+    h.style.gridArea = `1 / ${ci+2}`;
+    g.append(h);
+  });
 
-  state.settings.slots.forEach((time, si) => {
-    const parts = time.split("-");
+  const taken = new Set();   // "Tag:Stunde", die eine Doppelstunde schon abdeckt
+
+  rows.forEach((r, i) => {
+    const gr = i + 2;
+    if (r.type === "break") {
+      const t = el("div","tt-t brk");
+      t.append(el("div", null, `${r.from}–${r.to}`));
+      t.style.gridArea = `${gr} / 1`;
+      g.append(t);
+      days.forEach((d, ci) => {
+        const duty = state.duties.find(x => x.day === d && x.brk === r.after);
+        const cell = el("div","tt-b" + (duty ? " set" : ""));
+        cell.style.gridArea = `${gr} / ${ci+2}`;
+        cell.append(el("div", duty ? "subj" : "add", duty ? duty.text : "＋"));
+        cell.title = duty ? "Aufsicht bearbeiten" : "Aufsicht eintragen";
+        cell.onclick = () => openDutyDialog(duty || null, d, r.after);
+        g.append(cell);
+      });
+      return;
+    }
+    const parts = r.time.split("-");
     const t = el("div","tt-t");
-    t.append(el("div",null,parts[0] || time));
-    if (parts[1]) t.append(el("div",null,parts[1]));
+    t.append(el("div", null, parts[0] || r.time));
+    if (parts[1]) t.append(el("div", null, parts[1]));
+    t.style.gridArea = `${gr} / 1`;
     g.append(t);
 
-    for (const d of days) {
-      const cell = el("div","tt-s");
-      const l = state.lessons.find(x => x.day === d && x.slot === si);
+    days.forEach((d, ci) => {
+      if (taken.has(d + ":" + r.si)) return;
+      const l = state.lessons.find(x => x.day === d && x.slot === r.si);
+      const dbl = isDouble(l);
+      const cell = el("div","tt-s" + (dbl ? " dbl" : ""));
+      cell.style.gridArea = `${gr} / ${ci+2} / span ${dbl ? 2 : 1} / span 1`;
       if (l) {
+        if (dbl) taken.add(d + ":" + (r.si + 1));
         cell.classList.add("full");
-        cell.style.background = l.color || "#2563eb";
-        cell.style.borderColor = l.color || "#2563eb";
+        cell.style.background = l.color || TT_DEFAULT_COLOR;
+        cell.style.borderColor = l.color || TT_DEFAULT_COLOR;
         cell.append(el("div","subj", l.subject));
         if (l.room) cell.append(el("div","room", l.room));
-        cell.onclick = () => openLessonDialog(l, d, si);
+        cell.onclick = () => openLessonDialog(l, d, r.si);
       } else {
-        cell.onclick = () => openLessonDialog(null, d, si);
+        cell.onclick = () => openLessonDialog(null, d, r.si);
       }
       g.append(cell);
-    }
+    });
   });
 }
 
+/* Farbfelder aufbauen; die Auswahl schreibt in das Farbfeld des Dialogs. */
+function renderSwatches(active) {
+  const box = $("l-swatches"); box.replaceChildren();
+  TT_COLORS.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.style.background = c;
+    b.title = c;
+    if (c === String(active || "").toLowerCase()) b.classList.add("sel");
+    b.onclick = () => { $("l-color").value = c; renderSwatches(c); };
+    box.append(b);
+  });
+}
 function openLessonDialog(lesson, day, slot) {
+  // Auf die zweite Haelfte einer Doppelstunde getippt: den ganzen Eintrag oeffnen.
+  if (!lesson) {
+    const owner = lessonAt(day, slot);
+    if (owner) { lesson = owner; slot = owner.slot; }
+  }
   editingLesson = { lesson, day, slot };
-  $("l-head").textContent = `${DAY_NAMES[day]}, ${slot+1}. Stunde`;
+  const span = isDouble(lesson) ? 2 : 1;
+  $("l-head").textContent = `${DAY_NAMES[day]}, ` +
+    (span === 2 ? `${slot+1}.+${slot+2}. Stunde` : `${slot+1}. Stunde`);
   $("l-subject").value = lesson ? lesson.subject : "";
   $("l-room").value    = lesson && lesson.room ? lesson.room : "";
-  $("l-color").value   = lesson && lesson.color ? lesson.color : "#2563eb";
+  const col = (lesson && lesson.color) ? lesson.color : TT_DEFAULT_COLOR;
+  $("l-color").value = col;
+  renderSwatches(col);
+  const may = canDouble(slot);
+  $("l-dbl-row").hidden = !may;
+  $("l-dbl").checked = may && span === 2;
   $("l-del").style.display = lesson ? "" : "none";
   $("dlg-lesson").showModal();
   setTimeout(() => $("l-subject").focus(), 60);
 }
+$("l-color").oninput = () => renderSwatches($("l-color").value);
 $("l-save").onclick = () => {
   const subject = $("l-subject").value.trim();
   if (!subject) return toast("Bitte ein Fach eingeben.");
   const lesson = editingLesson.lesson, day = editingLesson.day, slot = editingLesson.slot;
   const room = $("l-room").value.trim() || null, color = $("l-color").value;
-  if (lesson) { Object.assign(lesson, { subject, room, color }); touch(lesson); }
-  else state.lessons.push({ id: uid(), day, slot, subject, room, color, createdAt: Date.now() });
-  save(); $("dlg-lesson").close(); renderTimetable(); fillSubjectSelects(); updateStorageInfo();
+  const span = ($("l-dbl").checked && canDouble(slot)) ? 2 : 1;
+  // Wird zur Doppelstunde erweitert, muss die Folgestunde weichen.
+  if (span === 2) {
+    const next = state.lessons.find(x => x.day === day && x.slot === slot + 1 && x !== lesson);
+    if (next && !confirm(`„${next.subject}“ in der ${slot+2}. Stunde wird durch die Doppelstunde ersetzt. Fortfahren?`)) return;
+    if (next) { markDeleted(next.id); state.lessons = state.lessons.filter(x => x.id !== next.id); }
+  }
+  if (lesson) { Object.assign(lesson, { subject, room, color, span }); touch(lesson); }
+  else state.lessons.push({ id: uid(), day, slot, span, subject, room, color, createdAt: Date.now() });
+  save(); $("dlg-lesson").close(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo();
 };
 $("l-cancel").onclick = () => $("dlg-lesson").close();
 $("l-del").onclick = () => {
@@ -2457,8 +2687,44 @@ $("l-del").onclick = () => {
   if (!lesson) { $("dlg-lesson").close(); return; }
   markDeleted(lesson.id);
   state.lessons = state.lessons.filter(x => x.id !== lesson.id);
-  save(); $("dlg-lesson").close(); renderTimetable(); fillSubjectSelects(); updateStorageInfo(); toast("Gelöscht.");
+  save(); $("dlg-lesson").close(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo(); toast("Gelöscht.");
 };
+
+/* ---------- Aufsichten in den Pausen ---------- */
+let editingDuty = null;
+function openDutyDialog(duty, day, brk) {
+  editingDuty = { duty, day, brk };
+  const rows = ttRows();
+  const r = rows.find(x => x.type === "break" && x.after === brk);
+  $("d-head").textContent = `${DAY_NAMES[day]}, Pause` + (r ? ` ${r.from}–${r.to}` : "");
+  $("d-text").value = duty ? duty.text : "";
+  // Bereits verwendete Eintraege als Vorschlag anbieten.
+  const dl = $("duty-list"); dl.replaceChildren();
+  [...new Set(state.duties.map(x => x.text))].sort((a,b) => a.localeCompare(b,"de"))
+    .forEach(t => dl.append(new Option(t)));
+  $("d-del").style.display = duty ? "" : "none";
+  $("dlg-duty").showModal();
+  setTimeout(() => $("d-text").focus(), 60);
+}
+$("d-cancel").onclick = () => $("dlg-duty").close();
+$("d-save").onclick = () => {
+  const text = $("d-text").value.trim();
+  if (!text) return toast("Bitte einen Text eingeben.");
+  const { duty, day, brk } = editingDuty;
+  if (duty) { Object.assign(duty, { text }); touch(duty); }
+  else state.duties.push({ id: uid(), day, brk, text, createdAt: Date.now() });
+  save(); $("dlg-duty").close(); renderTimetable(); renderWeek(); updateStorageInfo();
+  toast("Aufsicht gespeichert.");
+};
+$("d-del").onclick = () => {
+  const duty = editingDuty.duty;
+  if (!duty) { $("dlg-duty").close(); return; }
+  markDeleted(duty.id);
+  state.duties = state.duties.filter(x => x.id !== duty.id);
+  save(); $("dlg-duty").close(); renderTimetable(); renderWeek(); updateStorageInfo();
+  toast("Aufsicht gelöscht.");
+};
+$("d-text").onkeydown = e => { if (e.key === "Enter") $("d-save").click(); };
 
 /* ---------- Einkaufsliste ---------- */
 function addItem() {
@@ -2537,19 +2803,23 @@ $("btn-save-slots").onclick = () => {
   const lines = $("slot-editor").value.split("\n").map(s => s.trim()).filter(Boolean);
   if (!lines.length) return toast("Mindestens eine Zeile angeben.");
   if (lines.length > 14) return toast("Höchstens 14 Stunden möglich.");
-  const removed = state.lessons.filter(l => l.slot >= lines.length).length;
+  const removed = state.lessons.filter(l => l.slot >= lines.length).length
+                + state.duties.filter(d => d.brk >= lines.length - 1).length;
   if (removed && !confirm(`${removed} Eintrag/Einträge liegen außerhalb der neuen Zeiten und werden gelöscht. Fortfahren?`)) return;
   state.lessons.filter(l => l.slot >= lines.length).forEach(l => markDeleted(l.id));
   state.lessons = state.lessons.filter(l => l.slot < lines.length);
+  state.duties.filter(d => d.brk >= lines.length - 1).forEach(d => markDeleted(d.id));
+  state.duties = state.duties.filter(d => d.brk < lines.length - 1);
   state.settings.slots = lines;
-  save(); fillSlotSelects(); renderTimetable(); toast("Zeiten gespeichert.");
+  save(); fillSlotSelects(); renderTimetable(); renderWeek(); toast("Zeiten gespeichert.");
 };
 $("tt-days").onchange = e => {
   const mode = e.target.value;
   const keep = mode === "moso" ? [1,2,3,4,5,6,7]
              : mode === "mosa" ? [1,2,3,4,5,6]
              : [1,2,3,4,5];
-  const lost = state.lessons.filter(l => keep.indexOf(l.day) === -1);
+  const lost = [...state.lessons.filter(l => keep.indexOf(l.day) === -1),
+                ...state.duties.filter(d => keep.indexOf(d.day) === -1)];
   // Einträge an ausgeblendeten Tagen nicht stillschweigend löschen.
   if (lost.length && !confirm(
         `${lost.length} Stundenplan-Eintrag/-Einträge liegen an Tagen, die künftig ausgeblendet werden, und gehen verloren. Fortfahren?`)) {
@@ -2558,6 +2828,7 @@ $("tt-days").onchange = e => {
   }
   lost.forEach(l => markDeleted(l.id));
   state.lessons = state.lessons.filter(l => keep.indexOf(l.day) > -1);
+  state.duties  = state.duties.filter(d => keep.indexOf(d.day) > -1);
   state.settings.weekDays = mode;
   save(); fillSlotSelects(); renderTimetable(); renderWeek();
   toast("Wochentage angepasst.");
@@ -2573,6 +2844,7 @@ function updateStorageInfo() {
   const parts = [
     `${state.tasks.length} Aufgaben`,
     `${state.lessons.length} Stunden`,
+    ...(state.duties.length ? [`${state.duties.length} Aufsichten`] : []),
     `${state.shopping.length} Artikel`,
     `${(dataBytes/1024).toFixed(1)} KB Daten`
   ];
@@ -2620,7 +2892,7 @@ $("file-import").onchange = e => {
       // Importierte Einträge frisch stempeln, damit der Geräteabgleich sie
       // nicht gleich wieder mit dem alten Drive-Stand überschreibt.
       const nowTs = Date.now();
-      for (const k of ["tasks","lessons","shopping","shoppingLists","referendare","categories"])
+      for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"])
         for (const o of (state[k] || [])) { o.updatedAt = nowTs; delete state.tombs[o.id]; }
       save(); initUI(); renderAll(); toast("Import erfolgreich.");
     } catch (err) { alert("Import fehlgeschlagen: " + err.message); }
@@ -2671,7 +2943,7 @@ $("btn-reset").onclick = () => {
   openNotes.clear();
   // Löschmarken für alles Bisherige, sonst bringt der Abgleich es zurück.
   const oldIds = [];
-  for (const k of ["tasks","lessons","shopping","shoppingLists","referendare","categories"])
+  for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"])
     for (const o of (state[k] || [])) oldIds.push(o.id);
   state = DEFAULT_STATE();
   const ts = Date.now();
@@ -2842,12 +3114,26 @@ function renderWeek() {
     }
     // Stundenplan des Tages (an Ferientagen/Feiertagen ausgeblendet).
     if (feat("timetable") && !hol && ttDays.indexOf(dow) > -1) {
-      const lessons = state.lessons.filter(l => l.day === dow).sort((a,b) => a.slot - b.slot);
-      if (lessons.length) {
+      // Stunden und Pausenaufsichten in eine gemeinsame, zeitliche Reihenfolge bringen.
+      const chips = [];
+      for (const l of state.lessons.filter(x => x.day === dow)) {
+        const last = isDouble(l) ? l.slot + 1 : l.slot;
+        chips.push({ sort: hhmm(slotStart(l.slot)), end: slotEnd(last), color: l.color || TT_DEFAULT_COLOR,
+          duty: false,
+          text: `${slotStart(l.slot)} ${l.subject}${l.room ? " · " + l.room : ""}` });
+      }
+      for (const d of state.duties.filter(x => x.day === dow)) {
+        const from = slotEnd(d.brk), to = slotStart(d.brk + 1);
+        if (!from) continue;
+        chips.push({ sort: hhmm(from) + 0.5, end: to, color: null, duty: true,
+          text: `${from} ${d.text}` });
+      }
+      if (chips.length) {
+        chips.sort((a,b) => a.sort - b.sort);
         const row = el("div","wd-lessons");
-        for (const l of lessons) {
-          const chip = el("span","wd-lesson", `${(state.settings.slots[l.slot]||"").split("-")[0]} ${l.subject}${l.room ? " · " + l.room : ""}`);
-          chip.style.background = l.color || "#2563eb";
+        for (const c of chips) {
+          const chip = el("span","wd-lesson" + (c.duty ? " duty" : "") + (isPast(iso, c.end) ? " past" : ""), c.text);
+          if (!c.duty) chip.style.background = c.color;
           row.append(chip);
         }
         body.append(row);
@@ -2873,6 +3159,16 @@ function bulkOverdueToToday() {
   over.forEach(t => { t.dueDate = today; touch(t); gAutoCal(t); });
   save(); renderTasks(); renderCalendar(); renderWeek();
   toast(over.length + " Aufgabe(n) auf heute gezogen.", () => restore(snap));
+}
+
+/* Vergangene Stunden werden durchgestrichen: an zurueckliegenden Tagen
+   grundsaetzlich, am heutigen Tag ab dem Ende der jeweiligen Stunde. */
+function isPast(iso, endTime) {
+  const today = todayISO();
+  if (iso < today) return true;
+  if (iso > today || !endTime) return false;
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes() >= hhmm(endTime);
 }
 
 function weekTaskRow(t, withDate) {  const row = el("div","wd-task");
@@ -2947,11 +3243,13 @@ function openRefDialog(id) {
   $("r-name").value = r ? r.name : "";
   $("r-fach").value = r ? (r.fach || "") : "";
   $("r-school").value = r ? (r.school || "") : "";
+  $("r-status").value = r ? (r.status || "") : "";
   $("r-mail").value = r ? (r.mail || "") : "";
   $("r-exam").value = r ? (r.exam || "") : "";
   $("r-exam-time").value = r ? (r.examTime || "") : "";
   $("r-guea").value = r ? (r.guea || "") : "";
   $("r-guea-time").value = r ? (r.gueaTime || "") : "";
+  $("r-gut").value = r ? (r.gutachten || "") : "";
   $("r-note").value = r ? (r.note || "") : "";
   $("r-del").hidden = !r;
   $("dlg-ref").showModal();
@@ -2962,9 +3260,11 @@ $("r-save").onclick = async () => {
   if (!name) return toast("Bitte einen Namen eingeben.");
   const data = {
     name, fach: $("r-fach").value.trim() || null, school: $("r-school").value.trim() || null,
+    status: $("r-status").value.trim() || null,
     mail: $("r-mail").value.trim() || null,
     exam: $("r-exam").value || null, examTime: $("r-exam-time").value || null,
     guea: $("r-guea").value || null, gueaTime: $("r-guea-time").value || null,
+    gutachten: $("r-gut").value || null,
     note: $("r-note").value.trim()
   };
   let r;
@@ -2972,6 +3272,7 @@ $("r-save").onclick = async () => {
   else { r = { id: uid(), createdAt: Date.now(), ubs: {}, ...data }; state.referendare.push(r); }
   await syncSpecialDate(r, "exam", "Prüfung", r.exam, r.examTime);
   await syncSpecialDate(r, "guea", "GüA",    r.guea, r.gueaTime);
+  syncGutachten(r);
   save(); $("dlg-ref").close(); renderRefs(); renderTasks(); renderWeek();
   toast("Gespeichert.");
 };
@@ -3053,6 +3354,15 @@ function timedEvent(date, time, durMin, summary, location) {
   return { summary, location: location || undefined,
     start: { dateTime: s.toISOString(), timeZone: "Europe/Berlin" },
     end:   { dateTime: e.toISOString(),   timeZone: "Europe/Berlin" } };
+}
+
+/* Abgabefrist fuer das Gutachten: Aufgabe genau am Stichtag, nicht davor.
+   Anders als bei Pruefung und GüA wird der Termin nicht vorgezogen —
+   eine Frist verschiebt sich nicht, nur weil sie in die Ferien faellt. */
+function syncGutachten(r) {
+  upsertPrepTask(r, "gutachten",
+    r.gutachten ? `Gutachten ${r.name} abgeben` : "",
+    r.gutachten || null);
 }
 
 /* Unterrichtsbesuche als vier feste Slots pro Person. */
@@ -3196,6 +3506,12 @@ function refCard(r, isArchived) {
   const bits = [];
   if (r.fach) bits.push(r.fach);
   if (r.school) bits.push(r.school);
+  if (r.status) bits.push(r.status);
+  if (r.gutachten) {
+    const d = daysUntil(r.gutachten);
+    bits.push(`Gutachten bis ${deDate(r.gutachten)}`
+      + (isArchived ? "" : (d < 0 ? " (überfällig)" : d === 0 ? " (heute)" : ` (noch ${d} Tage)`)));
+  }
   if (r.guea) bits.push(`GüA ${deDate(r.guea)}` + (r.gueaTime ? ` (${r.gueaTime})` : ""));
   if (r.exam) {
     const d = daysUntil(r.exam);
@@ -3409,12 +3725,12 @@ async function gSyncNow(showToast) {
   try {
     const remote = await gDrivePull();
     if (remote && (remote.savedAt || 0) !== state.savedAt) {
-      const before = JSON.stringify({ t:state.tasks, l:state.lessons, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
+      const before = JSON.stringify({ t:state.tasks, l:state.lessons, du:state.duties, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
       gApplyingRemote = true;
       state = mergeStates(state, remote);
       try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
       gApplyingRemote = false;
-      const after = JSON.stringify({ t:state.tasks, l:state.lessons, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
+      const after = JSON.stringify({ t:state.tasks, l:state.lessons, du:state.duties, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
       if (after !== before) {
         const active = document.activeElement || {};
         const isTyping = /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName || "");
@@ -4578,6 +4894,7 @@ function renderAll() {
 }
 
 load();
+migrateTtColors();
 gCalLoadCache();
 calSelected = todayISO();
 initUI();
@@ -4642,7 +4959,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 // Erinnerungen prüfen: beim Start, alle 5 Minuten und beim Zurückkehren in den Tab.
 checkReminder();
-setInterval(checkReminder, 5 * 60 * 1000);
+setInterval(() => { checkReminder(); renderWeek(); }, 5 * 60 * 1000);
 document.addEventListener("visibilitychange", () => {
   // Beim Weggehen ausstehende Änderungen sofort hochladen, statt auf den
   // Sammel-Countdown zu warten — der überlebt das Schließen nicht.
