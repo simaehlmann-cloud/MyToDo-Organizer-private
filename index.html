@@ -650,6 +650,7 @@ details.folder>div{padding:9px 4px 4px}
         <div>
           <div style="font-size:1.2rem;font-weight:700">My ToDo Organizer</div>
           <div style="color:var(--muted);font-size:.86rem">Private Version <span id="app-ver"></span></div>
+          <div style="color:var(--muted);font-size:.74rem;margin-top:3px" id="app-diag"></div>
         </div>
       </div>
       <p class="hint" style="margin:12px 0 0">Entwicklung und Konzept: <strong>Simon Mählmann</strong></p>
@@ -1008,7 +1009,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.29";
+const APP_VERSION = "1.30";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -5024,6 +5025,7 @@ $("m-mic").onclick = async () => {
 /* ---------- Start ---------- */
 function initUI() {
   $("app-ver").textContent = APP_VERSION;
+  updateDiag();
   fillCategorySelects();
   fillSlotSelects();
   fillSubjectSelects();
@@ -5055,16 +5057,27 @@ function renderAll() {
   updateBadge();
 }
 
-load();
-migrateTtColors();
-gCalLoadCache();
+/* Jeder Startschritt einzeln, damit ein Fehler nicht alles Weitere
+   verhindert — insbesondere nicht die Zurücktaste weiter unten. */
+window.__startFehler = [];
+function schritt(name, fn) {
+  try { fn(); }
+  catch (e) {
+    window.__startFehler.push(name + ": " + (e && e.message ? e.message : e));
+    console.error("Startschritt " + name + " fehlgeschlagen:", e);
+  }
+}
+schritt("load", load);
+schritt("farben", migrateTtColors);
+schritt("calcache", gCalLoadCache);
 calSelected = todayISO();
-initUI();
-renderAll();
-hideMicsIfUnsupported();
-gAutoConnect();
+schritt("initUI", initUI);
+schritt("render", renderAll);
+schritt("mics", hideMicsIfUnsupported);
+schritt("google", gAutoConnect);
 setTimeout(() => { if (!gAuthChecked) { gAuthChecked = true; renderAlarms(); } }, 20000);
-checkPendingMail();
+schritt("mail", checkPendingMail);
+schritt("diagnose", updateDiag);
 
 /* Service Worker registrieren, damit die App offline startet und sich
    über „Zum Startbildschirm hinzufügen“ installieren lässt.
@@ -5102,10 +5115,15 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
    wird er neu abgelegt, solange die App offen bleiben soll. Zum Beenden wird
    er bewusst nicht erneuert, sodass der nächste Druck die App regulär
    verlässt. */
+/* Mit var statt let: initUI() ruft updateDiag() auf, bevor diese Zeile
+   ausgewertet ist — mit let gaebe das einen Zugriffsfehler. */
+var backGuardInfo = "nicht gestartet";
 (function webBackButton() {
   const c = window.Capacitor;
-  if (c && c.Plugins && c.Plugins.App && c.Plugins.App.addListener) return;  // APK behandelt das selbst
-  if (!window.history || !history.pushState) return;
+  if (c && c.Plugins && c.Plugins.App && c.Plugins.App.addListener) {
+    backGuardInfo = "App-Variante"; return;          // APK behandelt das selbst
+  }
+  if (!window.history || !history.pushState) { backGuardInfo = "Verlauf nicht nutzbar"; return; }
 
   const MARKE = "mtoBack";
   let frist = null;                      // laeuft, solange "nochmal druecken" gilt
@@ -5113,7 +5131,9 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   const hatWache = () => !!(history.state && history.state[MARKE]);
   const wache = () => {
     if (hatWache()) return;
-    try { history.pushState({ [MARKE]: 1 }, ""); } catch {}
+    try { history.pushState({ [MARKE]: 1 }, ""); backGuardInfo = "aktiv"; }
+    catch (e) { backGuardInfo = "pushState: " + (e && e.message ? e.message : e); }
+    if (typeof updateDiag === "function") updateDiag();
   };
 
   /* Chrome auf Android ueberspringt beim Zurueckgehen bewusst alle
@@ -5128,16 +5148,17 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     bereit = true;
     wache();
   };
-  ["pointerdown","keydown","touchstart"].forEach(ev =>
-    window.addEventListener(ev, starten, { capture: true, once: true, passive: true }));
+  ["pointerdown","keydown","touchstart","click"].forEach(ev =>
+    window.addEventListener(ev, starten, { capture: true, passive: true }));
+  backGuardInfo = "wartet auf Berührung";
 
   window.addEventListener("popstate", () => {
-    if (!bereit) return;                 // vor der ersten Beruehrung nichts abfangen
-    // Offener Dialog: erst den schliessen.
+    if (!bereit) { backGuardInfo = "popstate vor Berührung"; 
+      if (typeof updateDiag === "function") updateDiag(); return; }
+
     const dlg = document.querySelector("dialog[open]");
     if (dlg) { try { dlg.close(); } catch {} wache(); return; }
 
-    // Unteransicht: zurueck zur Wochenuebersicht.
     const active = document.querySelector(".view.active");
     const view = active ? active.id.replace("view-", "") : "week";
     if (view !== "week") { switchTo("week"); wache(); return; }
@@ -5146,9 +5167,31 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     // erneuert — ein zweiter Druck verlaesst die App dann regulaer.
     if (frist) return;
     toast("Zum Beenden erneut zurück drücken.");
+    backGuardInfo = "Beenden vorgemerkt";
+    if (typeof updateDiag === "function") updateDiag();
     frist = setTimeout(() => { frist = null; wache(); }, 2500);
   });
 })();
+
+/* Lesbare Diagnosezeile im Info-Bereich. */
+function updateDiag() {
+  const el2 = document.getElementById("app-diag");
+  if (!el2) return;
+  let modus = "Browser";
+  try {
+    if (window.matchMedia && matchMedia("(display-mode: standalone)").matches) modus = "installiert";
+    if (window.Capacitor && window.Capacitor.isNativePlatform && Capacitor.isNativePlatform()) modus = "App";
+  } catch {}
+  const teile = [
+    "Modus: " + modus,
+    "Zurück: " + (backGuardInfo || "startet"),
+    "Verlauf: " + (window.history ? history.length : "?")
+  ];
+  const f = window.__startFehler || [];
+  if (f.length) teile.push("Startfehler: " + f.join("; "));
+  el2.textContent = teile.join(" · ");
+}
+updateDiag();   // Stand nach der Registrierung anzeigen
 
 /* ---------- Android-Zurück-Taste (installierte App) ----------
    Ohne Behandlung schließt die Zurück-Taste die App sofort. Erwartet wird:
