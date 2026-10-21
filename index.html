@@ -1008,7 +1008,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.27";
+const APP_VERSION = "1.28";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -3726,7 +3726,7 @@ function gClientId() {
   try { return idClean(localStorage.getItem(CLIENT_KEY)); } catch { return ""; }
 }
 function gHint() {
-  try { return localStorage.getItem(HINT_KEY) || ""; } catch { return ""; }
+  try { return idClean(localStorage.getItem(HINT_KEY)); } catch { return ""; }
 }
 
 function gLoadScript() {
@@ -4356,7 +4356,8 @@ $("btn-g-connect").onclick = async () => {
   const cid = idClean(roh);
   const weg = [...roh.trim()].length - [...cid].length;
   if (weg > 0) $("g-client").value = cid;      // bereinigte Fassung sichtbar machen
-  const hint = $("g-hint").value.trim();
+  const hint = idClean($("g-hint").value);
+  if (hint !== $("g-hint").value.trim()) $("g-hint").value = hint;
   if (!cid) return toast("Bitte zuerst die Client-ID eintragen (siehe ANLEITUNG.md).");
   // Tippfehler und halb eingefuegte IDs abfangen, bevor Google sie abweist.
   if (!/\.apps\.googleusercontent\.com$/.test(cid))
@@ -5092,7 +5093,47 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   } catch {}
 })();
 
-/* ---------- Android-Zurück-Taste ----------
+/* ---------- Zurücktaste in der PWA ----------
+   Die Behandlung weiter unten greift nur in der installierten Android-App
+   über Capacitor. In der PWA gibt es dieses Plugin nicht; dort verlässt die
+   Zurücktaste die Seite und schließt damit die App.
+   Gelöst über den Verlauf: Beim Start wird ein zusätzlicher Eintrag abgelegt.
+   Die Zurücktaste entfernt diesen Eintrag, was sich abfangen lässt — danach
+   wird er neu abgelegt, solange die App offen bleiben soll. Zum Beenden wird
+   er bewusst nicht erneuert, sodass der nächste Druck die App regulär
+   verlässt. */
+(function webBackButton() {
+  const c = window.Capacitor;
+  if (c && c.Plugins && c.Plugins.App && c.Plugins.App.addListener) return;  // APK behandelt das selbst
+  if (!window.history || !history.pushState) return;
+
+  const MARKE = "mtoBack";
+  let frist = null;                      // laeuft, solange "nochmal druecken" gilt
+
+  const wache = () => {
+    try { history.pushState({ [MARKE]: 1 }, ""); } catch {}
+  };
+  wache();
+
+  window.addEventListener("popstate", () => {
+    // Offener Dialog: erst den schliessen.
+    const dlg = document.querySelector("dialog[open]");
+    if (dlg) { try { dlg.close(); } catch {} wache(); return; }
+
+    // Unteransicht: zurueck zur Wochenuebersicht.
+    const active = document.querySelector(".view.active");
+    const view = active ? active.id.replace("view-", "") : "week";
+    if (view !== "week") { switchTo("week"); wache(); return; }
+
+    // Wochenuebersicht: einmal warnen. Der Wacheintrag wird bewusst NICHT
+    // erneuert — ein zweiter Druck verlaesst die App dann regulaer.
+    if (frist) return;
+    toast("Zum Beenden erneut zurück drücken.");
+    frist = setTimeout(() => { frist = null; wache(); }, 2500);
+  });
+})();
+
+/* ---------- Android-Zurück-Taste (installierte App) ----------
    Ohne Behandlung schließt die Zurück-Taste die App sofort. Erwartet wird:
    offener Dialog -> Dialog schließen; Unteransicht -> zurück zu den Aufgaben;
    Aufgabenansicht -> Nachfrage vor dem Beenden. */
