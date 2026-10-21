@@ -1008,7 +1008,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.28";
+const APP_VERSION = "1.29";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -5110,12 +5110,29 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   const MARKE = "mtoBack";
   let frist = null;                      // laeuft, solange "nochmal druecken" gilt
 
+  const hatWache = () => !!(history.state && history.state[MARKE]);
   const wache = () => {
+    if (hatWache()) return;
     try { history.pushState({ [MARKE]: 1 }, ""); } catch {}
   };
-  wache();
+
+  /* Chrome auf Android ueberspringt beim Zurueckgehen bewusst alle
+     Verlaufseintraege, die eine Seite ohne Zutun des Nutzers angelegt hat —
+     eine Schutzmassnahme gegen Seiten, die die Zuruecktaste kapern. Ein
+     direkt beim Laden abgelegter Eintrag waere also wirkungslos. Deshalb
+     wird er erst nach der ersten Beruehrung angelegt; ab dann gelten auch
+     alle weiteren Eintraege als legitim. */
+  let bereit = false;
+  const starten = () => {
+    if (bereit) return;
+    bereit = true;
+    wache();
+  };
+  ["pointerdown","keydown","touchstart"].forEach(ev =>
+    window.addEventListener(ev, starten, { capture: true, once: true, passive: true }));
 
   window.addEventListener("popstate", () => {
+    if (!bereit) return;                 // vor der ersten Beruehrung nichts abfangen
     // Offener Dialog: erst den schliessen.
     const dlg = document.querySelector("dialog[open]");
     if (dlg) { try { dlg.close(); } catch {} wache(); return; }
