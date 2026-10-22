@@ -1009,7 +1009,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.30";
+const APP_VERSION = "1.31";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -5153,6 +5153,17 @@ var backGuardInfo = "nicht gestartet";
   backGuardInfo = "wartet auf Berührung";
 
   window.addEventListener("popstate", () => {
+    // Allererste Handlung: Spur sichern, bevor irgendetwas schiefgehen kann.
+    try {
+      const a = document.querySelector(".view.active");
+      localStorage.setItem("mto-lastback", JSON.stringify({
+        t: Date.now(),
+        ansicht: a ? a.id.replace("view-","") : "?",
+        wache: hatWache(),
+        laenge: history.length,
+        bereit: bereit
+      }));
+    } catch {}
     if (!bereit) { backGuardInfo = "popstate vor Berührung"; 
       if (typeof updateDiag === "function") updateDiag(); return; }
 
@@ -5173,6 +5184,12 @@ var backGuardInfo = "nicht gestartet";
   });
 })();
 
+/* Festhalten, wenn die Seite verlassen wird — zusammen mit der Spur oben
+   zeigt das, ob vorher noch ein popstate ankam. */
+window.addEventListener("pagehide", () => {
+  try { localStorage.setItem("mto-lastexit", String(Date.now())); } catch {}
+});
+
 /* Lesbare Diagnosezeile im Info-Bereich. */
 function updateDiag() {
   const el2 = document.getElementById("app-diag");
@@ -5187,6 +5204,19 @@ function updateDiag() {
     "Zurück: " + (backGuardInfo || "startet"),
     "Verlauf: " + (window.history ? history.length : "?")
   ];
+  // Was geschah beim letzten Druck auf Zurück?
+  try {
+    const roh = localStorage.getItem("mto-lastback");
+    const exit = +localStorage.getItem("mto-lastexit") || 0;
+    if (roh) {
+      const b = JSON.parse(roh);
+      const alter = Math.round((Date.now() - b.t) / 1000);
+      teile.push(`letztes Zurück: vor ${alter}s (${b.ansicht}, Wache ${b.wache ? "ja" : "nein"}, Länge ${b.laenge})`);
+      if (exit) teile.push("Austritt " + (exit > b.t ? "danach" : "davor"));
+    } else {
+      teile.push("letztes Zurück: keins registriert" + (exit ? " (Austritt gab es)" : ""));
+    }
+  } catch {}
   const f = window.__startFehler || [];
   if (f.length) teile.push("Startfehler: " + f.join("; "));
   el2.textContent = teile.join(" · ");
