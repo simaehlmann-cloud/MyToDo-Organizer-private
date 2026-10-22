@@ -650,7 +650,6 @@ details.folder>div{padding:9px 4px 4px}
         <div>
           <div style="font-size:1.2rem;font-weight:700">My ToDo Organizer</div>
           <div style="color:var(--muted);font-size:.86rem">Private Version <span id="app-ver"></span></div>
-          <div style="color:var(--muted);font-size:.74rem;margin-top:3px" id="app-diag"></div>
         </div>
       </div>
       <p class="hint" style="margin:12px 0 0">Entwicklung und Konzept: <strong>Simon Mählmann</strong></p>
@@ -1009,7 +1008,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.32";
+const APP_VERSION = "1.33";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -5025,7 +5024,6 @@ $("m-mic").onclick = async () => {
 /* ---------- Start ---------- */
 function initUI() {
   $("app-ver").textContent = APP_VERSION;
-  updateDiag();
   fillCategorySelects();
   fillSlotSelects();
   fillSubjectSelects();
@@ -5077,7 +5075,8 @@ schritt("mics", hideMicsIfUnsupported);
 schritt("google", gAutoConnect);
 setTimeout(() => { if (!gAuthChecked) { gAuthChecked = true; renderAlarms(); } }, 20000);
 schritt("mail", checkPendingMail);
-schritt("diagnose", updateDiag);
+// Spuren der Fehlersuche aus v1.30–1.32 entfernen.
+try { localStorage.removeItem("mto-lastback"); localStorage.removeItem("mto-lastexit"); } catch {}
 
 /* Service Worker registrieren, damit die App offline startet und sich
    über „Zum Startbildschirm hinzufügen“ installieren lässt.
@@ -5107,34 +5106,21 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 })();
 
 /* ---------- Zurücktaste in der PWA ----------
-   Die Behandlung weiter unten greift nur in der installierten Android-App
-   über Capacitor. In der PWA gibt es dieses Plugin nicht; dort verlässt die
-   Zurücktaste die Seite und schließt damit die App.
-   Gelöst über den Verlauf: Beim Start wird ein zusätzlicher Eintrag abgelegt.
-   Die Zurücktaste entfernt diesen Eintrag, was sich abfangen lässt — danach
-   wird er neu abgelegt, solange die App offen bleiben soll. Zum Beenden wird
-   er bewusst nicht erneuert, sodass der nächste Druck die App regulär
-   verlässt. */
-/* Mit var statt let: initUI() ruft updateDiag() auf, bevor diese Zeile
-   ausgewertet ist — mit let gaebe das einen Zugriffsfehler. */
-/* ---------- Zurücktaste in der PWA ----------
-   Erster Versuch war ein künstlicher Wacheintrag beim Start. Chrome auf
-   Android überspringt solche Einträge jedoch und verlässt die App trotzdem
-   — nachgewiesen über die Diagnosezeile.
-   Darum jetzt der natürliche Weg: Jeder Ansichtswechsel und jeder geöffnete
-   Dialog legt im selben Moment, in dem der Nutzer tippt, einen Verlaufseintrag
-   an. Solche Einträge entstehen durch eine echte Nutzeraktion und werden
-   nicht übersprungen. Die Zurücktaste bewegt sich damit durch die App
-   zurück; aus der Wochenübersicht heraus verlässt sie die App — so wie bei
-   Android üblich. */
-var backGuardInfo = "nicht gestartet";
-var navTiefe = 0;
+   Ein künstlich beim Start angelegter Verlaufseintrag hilft hier nicht:
+   Chrome auf Android überspringt solche Einträge und verlässt die App
+   trotzdem — auf dem Gerät nachgemessen.
+   Darum der natürliche Weg: Jeder Ansichtswechsel und jeder geöffnete
+   Dialog legt im selben Moment, in dem der Nutzer tippt, einen
+   Verlaufseintrag an. Solche Einträge entstehen durch eine echte
+   Nutzeraktion und werden nicht übersprungen. Die Zurücktaste bewegt sich
+   damit durch die App zurück; aus der Wochenübersicht heraus verlässt sie
+   die App — so wie bei Android üblich. */
 (function navVerlauf() {
   const c = window.Capacitor;
   if (c && c.Plugins && c.Plugins.App && c.Plugins.App.addListener) {
-    backGuardInfo = "App-Variante"; return;          // APK behandelt das selbst
+    return;                                          // APK behandelt das selbst
   }
-  if (!window.history || !history.pushState) { backGuardInfo = "Verlauf nicht nutzbar"; return; }
+  if (!window.history || !history.pushState) return;
 
   let restauriere = false;      // Wiederherstellung aus dem Verlauf laeuft
   let erwarteteBacks = 0;       // selbst ausgeloeste history.back()
@@ -5144,9 +5130,7 @@ var navTiefe = 0;
     return a ? a.id.replace("view-", "") : "week";
   };
   const merke = (zustand) => {
-    try { history.pushState(zustand, ""); navTiefe++; }
-    catch (e) { backGuardInfo = "pushState: " + (e && e.message ? e.message : e); }
-    if (typeof updateDiag === "function") updateDiag();
+    try { history.pushState(zustand, ""); } catch {}
   };
 
   // --- Ansichtswechsel in den Verlauf aufnehmen ---
@@ -5173,77 +5157,23 @@ var navTiefe = 0;
       // sonst braeuchte es spaeter einen zusaetzlichen Druck auf Zurueck.
       if (warOffen && !restauriere && history.state && history.state.mtoDialog) {
         erwarteteBacks++;
-        navTiefe = Math.max(0, navTiefe - 1);
         try { history.back(); } catch {}
       }
     };
   }
 
   window.addEventListener("popstate", (e) => {
-    // Spur sichern, bevor irgendetwas schiefgehen kann.
-    try {
-      localStorage.setItem("mto-lastback", JSON.stringify({
-        t: Date.now(), ansicht: aktuelleAnsicht(),
-        zustand: e.state ? Object.keys(e.state).join(",") : "leer",
-        laenge: history.length, tiefe: navTiefe
-      }));
-    } catch {}
-
     if (erwarteteBacks > 0) { erwarteteBacks--; return; }
-    navTiefe = Math.max(0, navTiefe - 1);
 
     restauriere = true;
     try {
       const dlg = document.querySelector("dialog[open]");
       if (dlg) { dlg.close(); }                 // schliessen, ohne erneut zurueckzugehen
       else origSwitchTo(e.state && e.state.mtoView ? e.state.mtoView : "week");
-    } catch (err) {
-      backGuardInfo = "Fehler: " + (err && err.message ? err.message : err);
-    } finally { restauriere = false; }
-    if (typeof updateDiag === "function") updateDiag();
+    } catch {} finally { restauriere = false; }
   });
-
-  backGuardInfo = "an Navigation gekoppelt";
 })();
 
-/* Festhalten, wenn die Seite verlassen wird — zusammen mit der Spur oben
-   zeigt das, ob vorher noch ein popstate ankam. */
-window.addEventListener("pagehide", () => {
-  try { localStorage.setItem("mto-lastexit", String(Date.now())); } catch {}
-});
-
-/* Lesbare Diagnosezeile im Info-Bereich. */
-function updateDiag() {
-  const el2 = document.getElementById("app-diag");
-  if (!el2) return;
-  let modus = "Browser";
-  try {
-    if (window.matchMedia && matchMedia("(display-mode: standalone)").matches) modus = "installiert";
-    if (window.Capacitor && window.Capacitor.isNativePlatform && Capacitor.isNativePlatform()) modus = "App";
-  } catch {}
-  const teile = [
-    "Modus: " + modus,
-    "Zurück: " + (backGuardInfo || "startet"),
-    "Verlauf: " + (window.history ? history.length : "?") + "/" + navTiefe
-  ];
-  // Was geschah beim letzten Druck auf Zurück?
-  try {
-    const roh = localStorage.getItem("mto-lastback");
-    const exit = +localStorage.getItem("mto-lastexit") || 0;
-    if (roh) {
-      const b = JSON.parse(roh);
-      const alter = Math.round((Date.now() - b.t) / 1000);
-      teile.push(`letztes Zurück: vor ${alter}s (${b.ansicht}, Wache ${b.wache ? "ja" : "nein"}, Länge ${b.laenge})`);
-      if (exit) teile.push("Austritt " + (exit > b.t ? "danach" : "davor"));
-    } else {
-      teile.push("letztes Zurück: keins registriert" + (exit ? " (Austritt gab es)" : ""));
-    }
-  } catch {}
-  const f = window.__startFehler || [];
-  if (f.length) teile.push("Startfehler: " + f.join("; "));
-  el2.textContent = teile.join(" · ");
-}
-updateDiag();   // Stand nach der Registrierung anzeigen
 
 /* ---------- Android-Zurück-Taste (installierte App) ----------
    Ohne Behandlung schließt die Zurück-Taste die App sofort. Erwartet wird:
