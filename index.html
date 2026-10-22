@@ -1009,7 +1009,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.31";
+const APP_VERSION = "1.32";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -5117,71 +5117,93 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
    verlässt. */
 /* Mit var statt let: initUI() ruft updateDiag() auf, bevor diese Zeile
    ausgewertet ist — mit let gaebe das einen Zugriffsfehler. */
+/* ---------- Zurücktaste in der PWA ----------
+   Erster Versuch war ein künstlicher Wacheintrag beim Start. Chrome auf
+   Android überspringt solche Einträge jedoch und verlässt die App trotzdem
+   — nachgewiesen über die Diagnosezeile.
+   Darum jetzt der natürliche Weg: Jeder Ansichtswechsel und jeder geöffnete
+   Dialog legt im selben Moment, in dem der Nutzer tippt, einen Verlaufseintrag
+   an. Solche Einträge entstehen durch eine echte Nutzeraktion und werden
+   nicht übersprungen. Die Zurücktaste bewegt sich damit durch die App
+   zurück; aus der Wochenübersicht heraus verlässt sie die App — so wie bei
+   Android üblich. */
 var backGuardInfo = "nicht gestartet";
-(function webBackButton() {
+var navTiefe = 0;
+(function navVerlauf() {
   const c = window.Capacitor;
   if (c && c.Plugins && c.Plugins.App && c.Plugins.App.addListener) {
     backGuardInfo = "App-Variante"; return;          // APK behandelt das selbst
   }
   if (!window.history || !history.pushState) { backGuardInfo = "Verlauf nicht nutzbar"; return; }
 
-  const MARKE = "mtoBack";
-  let frist = null;                      // laeuft, solange "nochmal druecken" gilt
+  let restauriere = false;      // Wiederherstellung aus dem Verlauf laeuft
+  let erwarteteBacks = 0;       // selbst ausgeloeste history.back()
 
-  const hatWache = () => !!(history.state && history.state[MARKE]);
-  const wache = () => {
-    if (hatWache()) return;
-    try { history.pushState({ [MARKE]: 1 }, ""); backGuardInfo = "aktiv"; }
+  const aktuelleAnsicht = () => {
+    const a = document.querySelector(".view.active");
+    return a ? a.id.replace("view-", "") : "week";
+  };
+  const merke = (zustand) => {
+    try { history.pushState(zustand, ""); navTiefe++; }
     catch (e) { backGuardInfo = "pushState: " + (e && e.message ? e.message : e); }
     if (typeof updateDiag === "function") updateDiag();
   };
 
-  /* Chrome auf Android ueberspringt beim Zurueckgehen bewusst alle
-     Verlaufseintraege, die eine Seite ohne Zutun des Nutzers angelegt hat —
-     eine Schutzmassnahme gegen Seiten, die die Zuruecktaste kapern. Ein
-     direkt beim Laden abgelegter Eintrag waere also wirkungslos. Deshalb
-     wird er erst nach der ersten Beruehrung angelegt; ab dann gelten auch
-     alle weiteren Eintraege als legitim. */
-  let bereit = false;
-  const starten = () => {
-    if (bereit) return;
-    bereit = true;
-    wache();
+  // --- Ansichtswechsel in den Verlauf aufnehmen ---
+  const origSwitchTo = switchTo;
+  switchTo = function (view) {
+    const vorher = aktuelleAnsicht();
+    origSwitchTo(view);
+    if (!restauriere && view !== vorher) merke({ mtoView: view });
   };
-  ["pointerdown","keydown","touchstart","click"].forEach(ev =>
-    window.addEventListener(ev, starten, { capture: true, passive: true }));
-  backGuardInfo = "wartet auf Berührung";
 
-  window.addEventListener("popstate", () => {
-    // Allererste Handlung: Spur sichern, bevor irgendetwas schiefgehen kann.
+  // --- Dialoge ebenso; sie oeffnen immer durch Antippen ---
+  const proto = window.HTMLDialogElement && HTMLDialogElement.prototype;
+  if (proto) {
+    const origShow = proto.showModal;
+    proto.showModal = function () {
+      origShow.call(this);
+      if (!restauriere) merke({ mtoDialog: this.id || 1 });
+    };
+    const origClose = proto.close;
+    proto.close = function (wert) {
+      const warOffen = this.open || this.hasAttribute("open");
+      origClose.call(this, wert);
+      // Schliesst der Nutzer den Dialog selbst, muss sein Verlaufseintrag weg,
+      // sonst braeuchte es spaeter einen zusaetzlichen Druck auf Zurueck.
+      if (warOffen && !restauriere && history.state && history.state.mtoDialog) {
+        erwarteteBacks++;
+        navTiefe = Math.max(0, navTiefe - 1);
+        try { history.back(); } catch {}
+      }
+    };
+  }
+
+  window.addEventListener("popstate", (e) => {
+    // Spur sichern, bevor irgendetwas schiefgehen kann.
     try {
-      const a = document.querySelector(".view.active");
       localStorage.setItem("mto-lastback", JSON.stringify({
-        t: Date.now(),
-        ansicht: a ? a.id.replace("view-","") : "?",
-        wache: hatWache(),
-        laenge: history.length,
-        bereit: bereit
+        t: Date.now(), ansicht: aktuelleAnsicht(),
+        zustand: e.state ? Object.keys(e.state).join(",") : "leer",
+        laenge: history.length, tiefe: navTiefe
       }));
     } catch {}
-    if (!bereit) { backGuardInfo = "popstate vor Berührung"; 
-      if (typeof updateDiag === "function") updateDiag(); return; }
 
-    const dlg = document.querySelector("dialog[open]");
-    if (dlg) { try { dlg.close(); } catch {} wache(); return; }
+    if (erwarteteBacks > 0) { erwarteteBacks--; return; }
+    navTiefe = Math.max(0, navTiefe - 1);
 
-    const active = document.querySelector(".view.active");
-    const view = active ? active.id.replace("view-", "") : "week";
-    if (view !== "week") { switchTo("week"); wache(); return; }
-
-    // Wochenuebersicht: einmal warnen. Der Wacheintrag wird bewusst NICHT
-    // erneuert — ein zweiter Druck verlaesst die App dann regulaer.
-    if (frist) return;
-    toast("Zum Beenden erneut zurück drücken.");
-    backGuardInfo = "Beenden vorgemerkt";
+    restauriere = true;
+    try {
+      const dlg = document.querySelector("dialog[open]");
+      if (dlg) { dlg.close(); }                 // schliessen, ohne erneut zurueckzugehen
+      else origSwitchTo(e.state && e.state.mtoView ? e.state.mtoView : "week");
+    } catch (err) {
+      backGuardInfo = "Fehler: " + (err && err.message ? err.message : err);
+    } finally { restauriere = false; }
     if (typeof updateDiag === "function") updateDiag();
-    frist = setTimeout(() => { frist = null; wache(); }, 2500);
   });
+
+  backGuardInfo = "an Navigation gekoppelt";
 })();
 
 /* Festhalten, wenn die Seite verlassen wird — zusammen mit der Spur oben
@@ -5202,7 +5224,7 @@ function updateDiag() {
   const teile = [
     "Modus: " + modus,
     "Zurück: " + (backGuardInfo || "startet"),
-    "Verlauf: " + (window.history ? history.length : "?")
+    "Verlauf: " + (window.history ? history.length : "?") + "/" + navTiefe
   ];
   // Was geschah beim letzten Druck auf Zurück?
   try {
