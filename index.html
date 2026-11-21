@@ -14,9 +14,10 @@
 <title>My ToDo Organizer</title>
 <style>
 :root{
-  --bg:#f4f5f7; --card:#fff; --side:#111827; --text:#1f2937; --muted:#6b7280;
+  --bg:#e9ecf0; --card:#fff; --side:#111827; --text:#1f2937; --muted:#6b7280;
   --primary:#2563eb; --primary-h:#1d4ed8; --danger:#dc2626; --ok:#059669; --warn:#d97706;
-  --border:#e5e7eb; --shadow:0 1px 3px rgba(0,0,0,.07);
+  --border:#e1e5ea; --shadow:0 1px 2px rgba(15,23,42,.05),0 6px 18px rgba(15,23,42,.05);
+  --head:#f4f6f8; --sel:#dbeafe; --weekend:#fafafa;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
@@ -46,6 +47,9 @@ body{display:flex;height:100dvh;background:var(--bg);color:var(--text);overflow:
   .card{padding:15px}
 }
 @media(min-width:761px){.nav-btn .ico{font-size:1rem}}
+.nav-btn .ico{display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.nav-btn .ico svg{width:20px;height:20px}
+@media(max-width:760px){.nav-btn .ico svg{width:23px;height:23px}.nav-btn.active .ico svg{stroke-width:2.2}}
 
 .view{display:none;animation:fade .18s ease}
 .view.active{display:block}
@@ -62,7 +66,7 @@ label.fld{display:block;font-size:.76rem;color:var(--muted);margin-bottom:4px;fo
 .btn:hover{background:var(--primary-h)}
 .btn:active{transform:scale(.98)}
 .btn-sm{padding:6px 11px;font-size:.79rem;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-weight:500}
-.btn-sm:hover{background:var(--bg)}
+.btn-sm:hover{background:var(--head)}
 .btn-sm.danger{color:var(--danger);border-color:#fca5a5}
 
 .filters{display:flex;gap:7px;align-items:center;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;flex-wrap:wrap}
@@ -89,10 +93,10 @@ label.fld{display:block;font-size:.76rem;color:var(--muted);margin-bottom:4px;fo
 
 .tt{display:grid;grid-template-columns:56px repeat(var(--cols,5),minmax(84px,1fr));gap:4px;min-width:560px}
 .tt-t.brk{font-size:.62rem;font-style:italic}
-.tt-h{font-weight:700;text-align:center;padding:7px;background:var(--bg);border-radius:5px;font-size:.85rem}
+.tt-h{font-weight:700;text-align:center;padding:7px;background:var(--head);border-radius:5px;font-size:.85rem}
 .tt-h.today{background:var(--primary);color:#fff}
 .tt-t{text-align:right;padding-right:7px;font-size:.68rem;color:var(--muted);align-self:center;line-height:1.3}
-.tt-s{background:var(--bg);border:1px solid var(--border);border-radius:5px;min-height:52px;padding:6px;font-size:.78rem;cursor:pointer;overflow:hidden}
+.tt-s{background:var(--head);border:1px solid var(--border);border-radius:5px;min-height:52px;padding:6px;font-size:.78rem;cursor:pointer;overflow:hidden}
 .tt-s:hover{outline:2px solid var(--primary)}
 .tt-s.full{color:#111827;border-width:1px}
 .tt-s.dbl{display:flex;flex-direction:column;justify-content:center}
@@ -153,11 +157,11 @@ input[type=checkbox]{width:21px;height:21px;flex-shrink:0;cursor:pointer;accent-
 .tog::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform .18s}
 .tog.on::after{transform:translateX(20px)}
 
-dialog{border:none;border-radius:14px;padding:0;max-width:440px;width:calc(100% - 32px);box-shadow:0 18px 50px rgba(0,0,0,.28)}
+dialog{border:none;border-radius:14px;padding:0;max-width:440px;width:calc(100% - 32px);box-shadow:0 18px 50px rgba(0,0,0,.28);margin:auto}
 dialog::backdrop{background:rgba(0,0,0,.42)}
 dialog .bd{padding:20px}
 dialog h3{margin-bottom:14px}
-dialog .ft{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;background:var(--bg);border-top:1px solid var(--border);flex-wrap:wrap}
+dialog .ft{display:flex;gap:9px;justify-content:flex-end;padding:14px 20px;background:var(--head);border-top:1px solid var(--border);flex-wrap:wrap}
 
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--side);color:#fff;padding:11px 16px;border-radius:9px;font-size:.87rem;z-index:99;max-width:88%;text-align:center;display:none;align-items:center;gap:12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 #toast.show{display:flex}
@@ -213,20 +217,53 @@ body.sb-inset #main{padding-top:calc(16px + var(--sb-h,26px))}
 .gpill.on{background:#d1fae5;color:#065f46}
 .gpill .led{width:8px;height:8px;border-radius:50%;background:#9ca3af}
 .gpill.on .led{background:var(--ok)}
-.week-day{border:1px solid var(--border);border-radius:10px;margin-bottom:11px;overflow:hidden}
+/* Woche ohne große Karte: jeder Tag ist ein eigenes Kärtchen. */
+.card.week-wrap{background:transparent;box-shadow:none;padding-left:0;padding-right:0;padding-top:4px}
+.week-day{background:var(--card);border:1px solid transparent;border-radius:12px;margin-bottom:11px;overflow:hidden;box-shadow:var(--shadow)}
 .week-day.today{border-color:var(--primary);border-width:2px}
 .week-day.hol{background:#fefce8}
-.week-day.weekend{background:#fafafa}
+.week-day.weekend{background:var(--weekend)}
 .week-day.weekend.hol{background:#fefce8}
-.wd-head{display:flex;justify-content:space-between;align-items:baseline;gap:9px;padding:9px 12px;background:var(--bg);font-weight:700;font-size:.9rem;flex-wrap:wrap}
-.week-day.today .wd-head{background:var(--primary);color:#fff}
+.wd-head{display:flex;justify-content:space-between;align-items:baseline;gap:9px;padding:9px 12px;background:var(--head);font-weight:700;font-size:.9rem;flex-wrap:wrap}
+.week-day.today .wd-head{background:var(--sel);color:var(--primary-h)}
 .wd-head .hol-name{font-weight:600;font-size:.76rem;color:#a16207}
-.week-day.today .wd-head .hol-name{color:#fef9c3}
+.week-wrap #wk-overdue:not(:empty){background:var(--card);border-radius:12px;padding:12px;margin-bottom:11px;box-shadow:var(--shadow)}
 .wd-body{padding:9px 12px}
 .wd-lessons{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
-.wd-lesson{padding:3px 9px;border-radius:6px;color:#111827;font-size:.73rem;font-weight:600;white-space:nowrap}
+.wd-lesson{padding:3px 9px;border-radius:6px;color:#111827;font-size:.73rem;font-weight:600;white-space:nowrap;border:1px solid transparent;font-family:inherit;line-height:1.4}
+button.wd-lesson{cursor:pointer}
+button.wd-lesson:hover{outline:2px solid var(--primary);outline-offset:1px}
 .wd-lesson.past{text-decoration:line-through;opacity:.45}
 .wd-lesson.duty{background:#fef3c7;border:1px solid #fcd34d}
+.wd-lesson.off{background:#fff!important;border:1px dashed #f87171;color:#991b1b}
+.wd-lesson.sub{background:#fff;border:1px dashed var(--muted)}
+.wd-lesson.sub.plus{background:#ecfdf5;border-color:#6ee7b7;color:#065f46}
+.wd-lesson.sub.minus{background:#fef2f2;border-color:#fca5a5;color:#991b1b}
+.wd-lesson.sub.aufsicht{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.wd-add{background:none;border:none;color:var(--primary);font-size:.76rem;font-weight:600;cursor:pointer;padding:6px 0 0;font-family:inherit}
+.wd-task .tm{font-size:.74rem;font-weight:700;color:var(--primary-h);white-space:nowrap}
+.review{background:var(--card);border-radius:12px;padding:13px 14px;margin-bottom:11px;box-shadow:var(--shadow);border-left:4px solid var(--ok)}
+.review .rv-top{display:flex;justify-content:space-between;align-items:center;gap:9px;margin-bottom:10px}
+.review .rv-h{font-weight:700}
+.review .hint{white-space:pre-line;margin:10px 0 0}
+.sub-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:12px}
+.review .sub-tiles{margin-bottom:0}
+.sub-tile{border-radius:11px;padding:9px 6px;text-align:center;background:var(--head)}
+.sub-tile b{display:block;font-size:1.2rem}
+.sub-tile span{font-size:.72rem;color:var(--muted)}
+.sub-tile.pos b{color:var(--ok)}.sub-tile.neg b{color:var(--danger)}
+.sub-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:9px;background:var(--head);margin-bottom:6px;cursor:pointer;font-size:.84rem;border-left:3px solid var(--muted)}
+.sub-row.plus{border-left-color:var(--ok)}.sub-row.minus{border-left-color:var(--danger)}.sub-row.aufsicht{border-left-color:var(--warn)}
+.cnt-row{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--border);font-size:.85rem;flex-wrap:wrap}
+.cnt-row:last-child{border-bottom:none}
+.cnt-row b{padding:2px 8px;border-radius:6px;color:#111827;font-size:.78rem;white-space:nowrap}
+.memo-row{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;margin:5px 0;font-size:.85rem}
+.memo-row span:first-child{flex:1;word-break:break-word}
+.memo-row .pt,.sub-row .pt{color:var(--muted);font-size:.74rem;white-space:nowrap}
+.lh-row{padding:9px 11px;border-radius:9px;background:var(--head);margin-bottom:7px}
+.lh-row .lh-d{font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:3px}
+.lh-row .lh-t{font-size:.88rem;white-space:pre-wrap;word-break:break-word}
+.qa-time input[type=time]{max-width:130px}
 .wd-task{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.87rem;cursor:pointer;border-left:3px solid transparent;padding-left:8px}
 .wd-task:hover{background:var(--bg);border-radius:5px}
 .wd-task .pt{color:var(--muted);font-size:.72rem;white-space:nowrap}
@@ -266,7 +303,7 @@ details.folder>div{padding:9px 4px 4px}
 .cal-c .gdot{width:5px;height:5px;border-radius:1px}
 @media print{
   :root{--bg:#fff;--card:#fff;--side:#fff;--text:#111827;--muted:#4b5563;--border:#d1d5db;--shadow:none}
-  #sidebar,.qa,.qa-bar,.qa-due,.filters,#f-search,.actions,.btn,.btn-sm,#toast,dialog,.alarm{display:none!important}
+  #sidebar,.qa,.qa-bar,.qa-due,.filters,#f-search,.actions,.btn,.btn-sm,#toast,dialog,.alarm,.wd-add,#wk-review{display:none!important}
   body{display:block;height:auto;overflow:visible;background:#fff}
   #main{overflow:visible;padding:0}
   .card{box-shadow:none;border:1px solid #d1d5db;break-inside:avoid}
@@ -295,6 +332,15 @@ details.folder>div{padding:9px 4px 4px}
   .alarm.red .ac button.ok{background:#1e293b;color:#fecaca;border-color:#7f1d1d}
   .alarm.amber{background:#3b2f14;border-color:#92400e;color:#fde68a}
   .alarm.amber .ac button.ok{background:#1e293b;color:#fde68a;border-color:#92400e}
+  :root{--head:#162033;--sel:#1e3a8a;--weekend:#172033}
+  .week-day.today .wd-head{color:#dbeafe}
+  .wd-task .tm{color:#93c5fd}
+  .wd-lesson.off{background:#1e293b!important;color:#fca5a5;border-color:#7f1d1d}
+  .wd-lesson.sub.plus{background:#064e3b;color:#a7f3d0;border-color:#047857}
+  .wd-lesson.sub.minus{background:#3f1d1d;color:#fecaca;border-color:#7f1d1d}
+  .wd-lesson.sub.aufsicht{background:#3b2f14;color:#fde68a;border-color:#92400e}
+  .memo-row{background:#3b2f14;border-color:#92400e}
+  .wd-add{color:#93c5fd}
 }
 </style>
 </head>
@@ -302,14 +348,14 @@ details.folder>div{padding:9px 4px 4px}
 
 <nav id="sidebar">
   <h2>My ToDo Organizer</h2>
-  <button class="nav-btn active" data-view="week"><span class="ico">📆</span><span>Woche</span></button>
-  <button class="nav-btn" data-view="tasks"><span class="ico">📋</span><span>Aufgaben</span></button>
-  <button class="nav-btn" data-view="calendar"><span class="ico">🗓</span><span>Kalender</span></button>
-  <button class="nav-btn" data-view="timetable"><span class="ico">📅</span><span>Stundenplan</span></button>
-  <button class="nav-btn" data-view="referendare"><span class="ico">🎓</span><span>Referendare</span></button>
-  <button class="nav-btn" data-view="shopping"><span class="ico">🛒</span><span>Einkauf</span></button>
-  <button class="nav-btn" data-view="settings"><span class="ico">⚙️</span><span>Einstell.</span></button>
-  <button class="nav-btn" data-view="about"><span class="ico">ℹ️</span><span>Info</span></button>
+  <button class="nav-btn active" data-view="week"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7.5 14h3M13.5 14h3M7.5 17.5h3"/></svg></span><span>Woche</span></button>
+  <button class="nav-btn" data-view="tasks"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 9.2l1.6 1.6L12.4 8M14.5 9.5H17M8 15.2l1.6 1.6 2.8-2.8M14.5 15.5H17"/></svg></span><span>Aufgaben</span></button>
+  <button class="nav-btn" data-view="calendar"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><circle cx="8" cy="14" r=".6" fill="currentColor"/><circle cx="12" cy="14" r=".6" fill="currentColor"/><circle cx="16" cy="14" r=".6" fill="currentColor"/><circle cx="8" cy="17.5" r=".6" fill="currentColor"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg></span><span>Kalender</span></button>
+  <button class="nav-btn" data-view="timetable"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M3 14.5h18M9 4v16M15 4v16"/></svg></span><span>Stundenplan</span></button>
+  <button class="nav-btn" data-view="referendare"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.5 12 5l9.5 4.5L12 14z"/><path d="M6.5 11.6v4.1c1.5 1.4 3.4 2.1 5.5 2.1s4-.7 5.5-2.1v-4.1M21.5 9.5v5"/></svg></span><span>Referendare</span></button>
+  <button class="nav-btn" data-view="shopping"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.2l2.3 10.3a1.8 1.8 0 0 0 1.8 1.4h7.6a1.8 1.8 0 0 0 1.7-1.3L21 8H6.1"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg></span><span>Einkauf</span></button>
+  <button class="nav-btn" data-view="settings"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1"/><circle cx="15" cy="6.5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17.5" r="2"/></svg></span><span>Einstell.</span></button>
+  <button class="nav-btn" data-view="about"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.8" r=".7" fill="currentColor"/></svg></span><span>Info</span></button>
   <div id="sidebar-foot">Private Version · Sync über Google<br>© Simon Mählmann</div>
 </nav>
 
@@ -328,7 +374,7 @@ details.folder>div{padding:9px 4px 4px}
         <p class="brand-sub" id="brand-sub"></p>
       </div>
     </header>
-    <div class="card">
+    <div class="card week-wrap">
       <div class="cal-head">
         <button class="btn-sm" id="wk-prev" aria-label="Vorige Woche">‹</button>
         <span class="mo" id="wk-title"></span>
@@ -340,6 +386,7 @@ details.folder>div{padding:9px 4px 4px}
         </div>
       </div>
       <div id="wk-alarms"></div>
+      <div id="wk-review"></div>
       <div id="wk-overdue"></div>
       <div id="wk-days"></div>
     </div>
@@ -365,6 +412,13 @@ details.folder>div{padding:9px 4px 4px}
         <label class="fld" for="t-date">Fällig am</label>
         <input type="date" id="t-date">
       </div>
+      <div class="qa-due qa-time">
+        <label class="fld" for="t-time">Uhrzeit</label>
+        <input type="time" id="t-time" aria-label="Beginn">
+        <span class="hint" style="margin:0">bis</span>
+        <input type="time" id="t-end" aria-label="Ende">
+      </div>
+      <p class="hint" style="margin:8px 0 0">Zeiten lassen sich auch eintippen: „Fußballtraining 18–19:30“, „von 18 bis 19.30“, „18 Uhr 90 Min“.</p>
       <div class="grid" id="t-details" hidden>
         <div><label class="fld" for="t-category">Kategorie</label><select id="t-category"></select></div>
         <div><label class="fld" for="t-prio">Priorität</label><select id="t-prio">
@@ -433,6 +487,7 @@ details.folder>div{padding:9px 4px 4px}
           </label>
         </div>
         <div><label class="fld" for="tt-subject">Fach</label><input type="text" id="tt-subject" placeholder="z. B. Mathematik"></div>
+        <div><label class="fld" for="tt-klass">Klasse / Kurs</label><input type="text" id="tt-klass" placeholder="z. B. 7b"></div>
         <div><label class="fld" for="tt-room">Raum / Lehrkraft</label><input type="text" id="tt-room" placeholder="optional"></div>
       </div>
       <button class="btn" id="btn-add-lesson">Speichern</button>
@@ -441,6 +496,26 @@ details.folder>div{padding:9px 4px 4px}
       <div class="tt" id="tt-grid"></div>
       <p class="hint" style="margin:13px 0 0">Belegte Zelle antippen zum Bearbeiten oder Löschen, leere Zelle legt einen neuen Eintrag an.
       Die gestrichelten Zeilen sind die Pausen zwischen den Stunden — dort lassen sich Aufsichten eintragen.</p>
+    </div>
+    <div class="card" id="tt-count-card">
+      <h3>Noch … Stunden</h3>
+      <p class="hint">Wie viele Stunden jede Klasse bis zur nächsten Klassenarbeit und bis zu den nächsten Ferien noch hat. Gezählt werden nur Stunden, die stattfinden — Ferien, Feiertage und ausgefallene Stunden nicht, Doppelstunden doppelt.</p>
+      <div id="tt-count"></div>
+    </div>
+    <div class="card" id="sub-card">
+      <h3>Mehr- und Minderstunden</h3>
+      <p class="hint">Vertretungen trägst du in der Woche über „＋ Vertretung“ am jeweiligen Tag ein, ausgefallene eigene Stunden über das Antippen der Stunde in der Woche.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <select id="sub-range" style="width:auto">
+          <option value="month">Dieser Monat</option>
+          <option value="half" selected>Dieses Halbjahr</option>
+          <option value="year">Dieses Schuljahr</option>
+          <option value="all">Alle</option>
+        </select>
+        <button class="btn-sm" id="sub-share">Liste teilen</button>
+      </div>
+      <div class="sub-tiles" id="sub-tiles"></div>
+      <div id="sub-list"></div>
     </div>
   </section>
 
@@ -575,7 +650,7 @@ details.folder>div{padding:9px 4px 4px}
 
     <div class="card">
       <h3>Erinnerungen</h3>
-      <p class="hint">In der installierten Android-App werden Erinnerungen beim Betriebssystem eingeplant und erscheinen auch bei geschlossener App. Im Browser ist das technisch nicht möglich — dort erscheinen sie nur, solange die Seite geöffnet ist.</p>
+      <p class="hint" id="rem-intro"></p>
       <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end">
         <div><label class="fld" for="rem-time">Tägliche Erinnerung um</label><input type="time" id="rem-time" style="width:auto"></div>
         <button class="btn" id="btn-rem-allow">Benachrichtigungen erlauben</button>
@@ -672,13 +747,16 @@ details.folder>div{padding:9px 4px 4px}
       <div class="feat"><div class="i">🛒</div><div><div class="t">Einkaufsliste</div><div class="d">Schnelles Erfassen, Abhaken, gesammeltes Aufräumen und Teilen.</div></div></div>
       <div class="feat"><div class="i">✉️</div><div><div class="t">Zuweisen und erinnern</div><div class="d">Aufgaben einer E-Mail-Adresse zuordnen und vorformulierte Erinnerungen oder Entwürfe im eigenen Mailprogramm öffnen.</div></div></div>
       <div class="feat"><div class="i">☑</div><div><div class="t">Unterpunkte</div><div class="d">Größere Vorhaben in Einzelschritte zerlegen. Ein Fortschrittsbalken zeigt, wie weit die Aufgabe gediehen ist.</div></div></div>
-      <div class="feat"><div class="i">📚</div><div><div class="t">Verknüpfung mit dem Stundenplan</div><div class="d">Aufgaben lassen sich einem Fach zuordnen. Die Karte zeigt dann, wann die nächste Stunde dieses Fachs stattfindet.</div></div></div>
+      <div class="feat"><div class="i">📚</div><div><div class="t">Verknüpfung mit dem Stundenplan</div><div class="d">Aufgaben lassen sich einem Fach und einer Lerngruppe zuordnen. Die Karte zeigt dann, wann die nächste Stunde dieser Klasse wirklich stattfindet — Ferien, Feiertage und Ausfälle sind berücksichtigt.</div></div></div>
+      <div class="feat"><div class="i">📝</div><div><div class="t">Notizen und Merkzettel je Stunde</div><div class="d">Stunde in der Woche antippen: Notiz zur Stunde mit Verlauf je Klasse, 📌-Merkzettel für die nächste Stunde, Hausaufgabe bis zur nächsten Stunde, Ausfall oder Vertretung eintragen.</div></div></div>
+      <div class="feat"><div class="i">±</div><div><div class="t">Mehr- und Minderstunden</div><div class="d">Vertretungen, Vertretungsaufsichten und ausgefallene eigene Stunden zählen; Übersicht nach Monat, Halbjahr und Schuljahr zum Teilen. Dazu „Noch X Stunden“ bis zur Klassenarbeit und zu den Ferien.</div></div></div>
+      <div class="feat"><div class="i">🕒</div><div><div class="t">Uhrzeit von–bis</div><div class="d">Aufgaben mit Zeitspanne, auch direkt im Titel („Training 18–19:30“). Der Google-Kalendertermin bekommt dann genau diese Zeit; Überschneidungen werden angezeigt.</div></div></div>
       <div class="feat"><div class="i">🔔</div><div><div class="t">Erinnerungen</div><div class="d">Tägliche Benachrichtigung über fällige und überfällige Aufgaben zur selbst gewählten Uhrzeit, solange die App geöffnet ist.</div></div></div>
       <div class="feat"><div class="i">↩</div><div><div class="t">Rückgängig</div><div class="d">Abhaken, Verschieben und Löschen lassen sich direkt aus der Einblendung heraus zurücknehmen.</div></div></div>
       <div class="feat"><div class="i">🔗</div><div><div class="t">Google-Kalender-Anbindung</div><div class="d">Aufgaben mit Datum werden per Knopfdruck oder automatisch als Termine in den Google Kalender geschrieben und beim Abhaken wieder entfernt.</div></div></div>
       <div class="feat"><div class="i">✉️</div><div><div class="t">E-Mails direkt senden</div><div class="d">Erinnerungen, Entwürfe und UB-Bestätigungen wahlweise sofort über das eigene Gmail-Konto verschicken (landen dort unter „Gesendet“) oder an das Standard-Mailprogramm des Geräts übergeben, am PC z. B. Thunderbird. Die App kann nur senden, nicht das Postfach lesen.</div></div></div>
       <div class="feat"><div class="i">👁</div><div><div class="t">Google-Termine ansehen</div><div class="d">Termine aus beliebig vielen Google-Kalendern erscheinen in Wochen- und Monatsansicht, farbig nach Kalender und einzeln zuschaltbar. Reine Anzeige — diese Termine werden nie verändert. Der zuletzt geladene Stand bleibt auch offline sichtbar.</div></div></div>
-      <div class="feat"><div class="i">☁️</div><div><div class="t">Geräte-Synchronisation</div><div class="d">Der komplette Datenbestand liegt zusätzlich in einem verborgenen App-Ordner in Google Drive und wird zwischen PC, iPad und Handy abgeglichen — zugleich ein automatisches Backup.</div></div></div>
+      <div class="feat"><div class="i">☁️</div><div><div class="t">Geräte-Synchronisation</div><div class="d">Der komplette Datenbestand liegt zusätzlich in einem verborgenen App-Ordner in Google Drive und wird zwischen PC, iPad und Handy abgeglichen — zugleich ein automatisches Backup. Änderungen gehen nach wenigen Sekunden hoch; solange die App offen ist, prüft sie alle 30 Sekunden auf Neues von anderen Geräten. Die Google-Verbindung wird automatisch erneuert.</div></div></div>
       <div class="feat"><div class="i">📆</div><div><div class="t">Wochenübersicht</div><div class="d">Startbildschirm mit Stundenplan und fälligen Aufgaben pro Tag, inklusive Ferien- und Feiertagsanzeige für Niedersachsen.</div></div></div>
       <div class="feat"><div class="i">📚</div><div><div class="t">Korrekturstapel</div><div class="d">Klassenarbeiten mit Zähler: abhaken, wie viele Arbeiten korrigiert sind, mit Fortschrittsbalken und Tagespensum bis zur Rückgabe.</div></div></div>
       <div class="feat"><div class="i">🎓</div><div><div class="t">Referendars-Verwaltung</div><div class="d">Personen im Fachseminar mit Status, Prüfungstermin und Gutachtenfrist; Vorbereitungsaufgaben entstehen automatisch. Unterrichtsbesuche wandern mit Fahrtzeit-Puffer in den Kalender.</div></div></div>
@@ -714,6 +792,10 @@ details.folder>div{padding:9px 4px 4px}
         <div><label class="fld" for="e-recurrence">Wiederholung</label><select id="e-recurrence">
           <option value="none">Keine</option><option value="daily">Täglich</option><option value="weekly">Wöchentlich</option>
           <option value="biweekly">Alle 2 Wochen</option><option value="monthly">Monatlich</option><option value="yearly">Jährlich</option></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+        <div><label class="fld" for="e-time">Uhrzeit von</label><input type="time" id="e-time"></div>
+        <div><label class="fld" for="e-end">bis</label><input type="time" id="e-end"></div>
       </div>
       <div id="e-fld-skiphol"><label class="fld" for="e-skiphol">In Ferien und an Feiertagen</label>
         <select id="e-skiphol">
@@ -774,7 +856,10 @@ details.folder>div{padding:9px 4px 4px}
   <div class="bd">
     <h3 id="l-head">Stunde</h3>
     <div style="display:grid;gap:11px">
-      <div><label class="fld" for="l-subject">Fach</label><input type="text" id="l-subject"></div>
+      <div style="display:grid;grid-template-columns:3fr 2fr;gap:11px">
+        <div><label class="fld" for="l-subject">Fach</label><input type="text" id="l-subject"></div>
+        <div><label class="fld" for="l-klass">Klasse / Kurs</label><input type="text" id="l-klass" placeholder="z. B. 7b"></div>
+      </div>
       <div><label class="fld" for="l-room">Raum / Lehrkraft</label><input type="text" id="l-room"></div>
       <div>
         <label class="fld">Farbe</label>
@@ -790,6 +875,7 @@ details.folder>div{padding:9px 4px 4px}
   </div>
   <div class="ft">
     <button class="btn-sm danger" id="l-del">Löschen</button>
+    <button class="btn-sm" id="l-hist">Notizen-Verlauf</button>
     <button class="btn-sm" id="l-cancel">Abbrechen</button>
     <button class="btn" id="l-save">Übernehmen</button>
   </div>
@@ -997,6 +1083,96 @@ details.folder>div{padding:9px 4px 4px}
   </div>
 </dialog>
 
+<dialog id="dlg-lday">
+  <div class="bd">
+    <h3 id="ld-head">Stunde</h3>
+    <p class="hint" id="ld-sub" style="margin-top:-8px"></p>
+    <div style="display:grid;gap:12px">
+      <div>
+        <label class="fld" for="ld-status">Diese Stunde</label>
+        <select id="ld-status">
+          <option value="">findet statt</option>
+          <option value="ausfall">fällt aus</option>
+          <option value="vertretung">wird vertreten / anderes Fach</option>
+        </select>
+        <label id="ld-minus-row" style="display:flex;align-items:center;gap:8px;font-size:.86rem;cursor:pointer;margin-top:8px">
+          <input type="checkbox" id="ld-minus" style="width:auto;margin:0"><span id="ld-minus-lbl">als Minusstunde zählen</span></label>
+        <input type="text" id="ld-extext" placeholder="z. B. Ausflug, Prüfung, statt dessen Deutsch …" style="margin-top:8px">
+      </div>
+      <div>
+        <label class="fld" for="ld-note">Notiz zu dieser Stunde</label>
+        <textarea id="ld-note" rows="3" placeholder="Was wurde gemacht? Wo geht es weiter?"></textarea>
+      </div>
+      <div id="ld-memos"></div>
+      <div>
+        <label class="fld" for="ld-memo-new">📌 Merkzettel für die nächste Stunde</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="ld-memo-new" placeholder="z. B. Hefte einsammeln">
+          <button class="btn-sm" id="ld-memo-add" style="flex-shrink:0">Merken</button>
+        </div>
+      </div>
+      <div>
+        <label class="fld" for="ld-hw">Hausaufgabe bis zur nächsten Stunde</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="ld-hw" placeholder="z. B. S. 42 Nr. 3">
+          <button class="btn-sm" id="ld-hw-add" style="flex-shrink:0">Anlegen</button>
+        </div>
+        <p class="hint" id="ld-next" style="margin:6px 0 0"></p>
+      </div>
+      <div id="ld-count" class="hint" style="margin:0"></div>
+    </div>
+  </div>
+  <div class="ft">
+    <button class="btn-sm" id="ld-hist">Verlauf</button>
+    <button class="btn-sm" id="ld-edit">Stundenplan</button>
+    <button class="btn-sm" id="ld-cancel">Abbrechen</button>
+    <button class="btn" id="ld-save">Speichern</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-lhist">
+  <div class="bd">
+    <h3 id="lh-head">Verlauf</h3>
+    <div id="lh-list" style="max-height:55vh;overflow-y:auto"></div>
+  </div>
+  <div class="ft">
+    <button class="btn-sm" id="lh-share">Verlauf teilen</button>
+    <button class="btn" id="lh-close">Schließen</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-sub">
+  <div class="bd">
+    <h3 id="sb-head">Vertretung</h3>
+    <div style="display:grid;gap:11px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+        <div><label class="fld" for="sb-type">Art</label><select id="sb-type">
+          <option value="plus">Vertretungsstunde</option>
+          <option value="aufsicht">Vertretungsaufsicht</option>
+          <option value="minus">Minusstunde</option>
+        </select></div>
+        <div><label class="fld" for="sb-date">Datum</label><input type="date" id="sb-date"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:11px">
+        <div><label class="fld" for="sb-slot">Stunde</label><select id="sb-slot"></select></div>
+        <div><label class="fld" for="sb-hours">Umfang</label><select id="sb-hours">
+          <option value="1">1 Stunde</option><option value="2">2 Stunden</option></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+        <div><label class="fld" for="sb-klass">Klasse</label><input type="text" id="sb-klass" placeholder="z. B. 8a"></div>
+        <div><label class="fld" for="sb-subject">Fach / Ort</label><input type="text" id="sb-subject" placeholder="z. B. Deutsch"></div>
+      </div>
+      <div><label class="fld" for="sb-note">Notiz</label><input type="text" id="sb-note" placeholder="optional, z. B. für Frau M."></div>
+      <p class="hint" style="margin:0">Aufsichten werden gezählt, aber nicht in den Saldo eingerechnet.</p>
+    </div>
+  </div>
+  <div class="ft">
+    <button class="btn-sm danger" id="sb-del" hidden>Löschen</button>
+    <button class="btn-sm" id="sb-cancel">Abbrechen</button>
+    <button class="btn" id="sb-save">Speichern</button>
+  </div>
+</dialog>
+
 <div id="toast" role="status"></div>
 
 <script>
@@ -1008,7 +1184,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.33";
+const APP_VERSION = "1.34";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -1052,7 +1228,8 @@ const FEATURES = [
   { key:"shopping",    label:"Einkaufsliste",        desc:"Separate Liste für Besorgungen." },
   { key:"assignee",    label:"Zuweisen an Personen", desc:"E-Mail-Feld bei Aufgaben plus Erinnerungsfunktion." },
   { key:"drafts",      label:"E-Mail-Entwürfe",      desc:"Vorformulierte Nachrichten über das Mailprogramm des Geräts." },
-  { key:"reminders",   label:"Erinnerungen",         desc:"Benachrichtigung bei fälligen Aufgaben, solange die App geöffnet ist. Muss zusätzlich unten freigegeben werden." }
+  { key:"reminders",   label:"Erinnerungen",         desc:"Benachrichtigung bei fälligen Aufgaben, solange die App geöffnet ist. Muss zusätzlich unten freigegeben werden." },
+  { key:"weekreview",  label:"Wochenrückblick",      desc:"Sonntags oben in der Woche: was geschafft ist, was offen blieb und was nächste Woche ansteht." }
 ];
 
 /* Gedeckte Farben fuer den Stundenplan — hell genug fuer schwarze Schrift. */
@@ -1111,6 +1288,9 @@ const DEFAULT_STATE = () => ({
   savedAt: 0,
   tombs: {},
   tasks: [], lessons: [], duties: [], shopping: [], shoppingLists: [], referendare: [],
+  // Unterricht: Notizen je Kurs und Datum, Merkzettel für die nächste Stunde,
+  // Ausfall/Vertretung einzelner Stunden, Mehr- und Minderstunden.
+  lessonNotes: [], lessonMemos: [], lessonEx: [], subLog: [],
   categories: [
     // "school" steuert, ob Wiederholungen in dieser Kategorie Ferien und
     // Feiertage überspringen. Privates läuft in den Ferien normal weiter.
@@ -1119,7 +1299,7 @@ const DEFAULT_STATE = () => ({
     { id:"c3", name:"Privat",      color:"#059669", school:false }
   ],
   settings: {
-    features: { calendar:true, timetable:true, referendare:true, shopping:true, assignee:true, drafts:true, reminders:true },
+    features: { calendar:true, timetable:true, referendare:true, shopping:true, assignee:true, drafts:true, reminders:true, weekreview:true },
     reminderTime: "08:00",
     slots: [...DEFAULT_SLOTS],
     // "mofr" = Mo–Fr, "mosa" = Mo–Sa, "moso" = Mo–So
@@ -1132,9 +1312,26 @@ const DEFAULT_STATE = () => ({
     showGcal: true,
     calendars: {},
     iservs: [ { n:"Schule", u:"" }, { n:"Studienseminar", u:"" } ],
-    iservPath: ""
+    iservPath: "",
+    reviewHidden: ""         // Montag der Woche, deren Rückblick weggetippt wurde
   }
 });
+
+/* Alle Listen, die auf Eintragsebene abgeglichen werden. Neue Datenarten
+   gehören hier hinein — sonst kämen sie nie auf dem anderen Gerät an. */
+const LISTS = ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories",
+               "lessonNotes","lessonMemos","lessonEx","subLog"];
+
+/* Ausfälle verfallen nach 60 Tagen, Merkzettel nach 120. Das Aufräumen
+   passiert beim Einlesen auf jedem Gerät gleich — darum braucht es keine
+   Löschmarken, und der Abgleich holt die alten Einträge nicht zurück. */
+function purgeOld(s) {
+  const cut = days => { const d = new Date(); d.setDate(d.getDate() - days); return isoOf(d); };
+  const c60 = cut(60), c120 = cut(120);
+  s.lessonEx = s.lessonEx.filter(x => x && x.date && x.date >= c60);
+  s.lessonMemos = s.lessonMemos.filter(x => x && x.after && x.after >= c120);
+  return s;
+}
 
 let state = DEFAULT_STATE();
 let filter = "open";
@@ -1157,7 +1354,7 @@ function normalizeState(p) {
   const d = DEFAULT_STATE();
   const s = p && typeof p === "object" ? p : {};
   const set = s.settings || {};
-  return {
+  return purgeOld({
     version: 3,
     savedAt: typeof s.savedAt === "number" ? s.savedAt : 0,
     tombs: (s.tombs && typeof s.tombs === "object") ? s.tombs : {},
@@ -1167,6 +1364,10 @@ function normalizeState(p) {
     shopping:    Array.isArray(s.shopping)    ? s.shopping    : [],
     shoppingLists: Array.isArray(s.shoppingLists) ? s.shoppingLists : [],
     referendare: Array.isArray(s.referendare) ? s.referendare : [],
+    lessonNotes: Array.isArray(s.lessonNotes) ? s.lessonNotes : [],
+    lessonMemos: Array.isArray(s.lessonMemos) ? s.lessonMemos : [],
+    lessonEx:    Array.isArray(s.lessonEx)    ? s.lessonEx    : [],
+    subLog:      Array.isArray(s.subLog)      ? s.subLog      : [],
     // "categories" fehlt komplett (alter Backup vor Kategorien-Feature) → Standardwerte.
     // Feld vorhanden, aber leer → so lassen (bewusste Entscheidung des Nutzers).
     // Altbestände kennen das Feld "school" noch nicht. Aus dem Namen ableiten,
@@ -1193,9 +1394,10 @@ function normalizeState(p) {
         ? set.iservs
         : [ { n:"Schule", u: (typeof set.iservUrl === "string" ? set.iservUrl : "") }, { n:"Studienseminar", u:"" } ],
       iservPath: typeof set.iservPath === "string" ? set.iservPath : "",
-      lastExport: typeof set.lastExport === "number" ? set.lastExport : 0
+      lastExport: typeof set.lastExport === "number" ? set.lastExport : 0,
+      reviewHidden: typeof set.reviewHidden === "string" ? set.reviewHidden : ""
     }
-  };
+  });
 }
 
 function load() {
@@ -1236,6 +1438,12 @@ function el(tag, cls, text) {
    erstellt und beim Antippen komplett zurückgespielt. */
 function toast(msg, undoFn) {
   const t = $("toast");
+  /* Bei offenem Dialog ist alles außerhalb des Dialogs gesperrt — ein
+     „Rückgängig“ dort ließe sich nicht antippen. Darum hängt der Hinweis
+     dann im Dialog selbst und wandert beim Schließen zurück. */
+  const dlg = [...document.querySelectorAll("dialog[open]")].pop();
+  const home = dlg || document.body;
+  if (t.parentElement !== home) home.append(t);
   t.replaceChildren();
   t.append(el("span", null, msg));
   if (undoFn) {
@@ -1254,6 +1462,13 @@ function hideToast() {
   t.classList.remove("show");
   clearTimeout(t._h); clearTimeout(t._hard);
 }
+document.addEventListener("close", e => {
+  const t = $("toast");
+  if (e.target && e.target.tagName === "DIALOG" && t && e.target.contains(t)) {
+    const rest = [...document.querySelectorAll("dialog[open]")].filter(d => d !== e.target).pop();
+    (rest || document.body).append(t);
+  }
+}, true);
 
 /* Vollständige Kopie des Datenstands für Rückgängig-Aktionen. */
 function snapshot() { return JSON.parse(JSON.stringify(state)); }
@@ -1263,7 +1478,7 @@ function restore(snap) {
   // damit der Geräteabgleich das Rückgängig nicht wieder rückgängig macht.
   const now = Date.now();
   state.tombs = state.tombs || {};
-  for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"]) {
+  for (const k of LISTS) {
     for (const o of (state[k] || [])) { o.updatedAt = now; delete state.tombs[o.id]; }
   }
   save(); initUI(); renderAll(); toast("Wiederhergestellt.");
@@ -1288,6 +1503,12 @@ function mergeStates(a, b) {
     for (const it of (lb || [])) {
       const cur = m.get(it.id);
       if (!cur || rankOf(it) > rankOf(cur)) m.set(it.id, it);
+      // Gleicher Zeitstempel, aber anderer Inhalt: auf beiden Geräten gleich
+      // entscheiden, sonst schöben sie sich die Fassungen endlos hin und her.
+      else if (rankOf(it) === rankOf(cur)) {
+        const x = JSON.stringify(it), y = JSON.stringify(cur);
+        if (x !== y && x > y) m.set(it.id, it);
+      }
     }
     const out = [];
     for (const it of m.values()) {
@@ -1297,17 +1518,16 @@ function mergeStates(a, b) {
     }
     return out;
   };
+  /* savedAt = der jüngere der beiden Stände, nicht "jetzt": Sonst gälte nach
+     jedem Abgleich der eigene Stand als neuer, und eine Einstellung, die das
+     andere Gerät kurz zuvor geändert hat, ginge beim nächsten Abgleich verloren. */
   const merged = {
-    version: 3, savedAt: now,
-    tasks:       mergeList(a.tasks, b.tasks),
-    lessons:     mergeList(a.lessons, b.lessons),
-    duties:      mergeList(a.duties, b.duties),
-    shopping:    mergeList(a.shopping, b.shopping),
-    shoppingLists: mergeList(a.shoppingLists, b.shoppingLists),
-    referendare: mergeList(a.referendare, b.referendare),
-    categories:  mergeList(a.categories, b.categories),
-    settings: ((a.savedAt || 0) >= (b.savedAt || 0) ? a : b).settings
+    version: 3, savedAt: Math.max(a.savedAt || 0, b.savedAt || 0),
+    settings: (a.savedAt || 0) > (b.savedAt || 0) ? a.settings
+            : (b.savedAt || 0) > (a.savedAt || 0) ? b.settings
+            : (JSON.stringify(a.settings) >= JSON.stringify(b.settings) ? a.settings : b.settings)
   };
+  for (const k of LISTS) merged[k] = mergeList(a[k], b[k]);
   // Erst nach dem Filtern aufräumen — sonst können sehr alte Löschmarken
   // nichts mehr löschen, bevor sie verschwinden.
   for (const k of Object.keys(tombs)) if (now - tombs[k] > 90 * 864e5) delete tombs[k];
@@ -1504,11 +1724,26 @@ $("btn-add-cat").onclick = () => {
 $("cat-name").onkeydown = e => { if (e.key === "Enter") $("btn-add-cat").click(); };
 
 /* ---------- Aufgaben ---------- */
+/* Ende aus dem Formular lesen: leer → null, vor dem Beginn → false. */
+function readEnd(start, end) {
+  if (!validTime(start) || !validTime(end)) return null;
+  return validEnd(start, end) ? end : false;
+}
 function addTask(dueOverride) {
-  const title = $("t-title").value.trim();
+  let title = $("t-title").value.trim();
   if (!title) { $("t-title").focus(); return toast("Bitte einen Titel eingeben."); }
+  let dueTime = $("t-time").value || null;
+  let endTime = readEnd(dueTime, $("t-end").value);
+  if (endTime === false) { $("t-end").focus(); return toast("Das Ende liegt vor dem Beginn."); }
+  // Uhrzeiten im Titel („Training 18–19:30“) übernehmen, wenn die Felder leer sind.
+  if (!dueTime) {
+    const p = parseTimes(title);
+    if (p.time) { title = p.title; dueTime = p.time; endTime = p.end; }
+  }
   const t = {
     id: uid(), title,
+    dueTime: validTime(dueTime) ? dueTime : null,
+    endTime: endTime || null,
     categoryId: $("t-category").value || null,
     prio: $("t-prio").value,
     dueDate: dueOverride || $("t-date").value || null,
@@ -1519,13 +1754,15 @@ function addTask(dueOverride) {
     subtasks: [],
     note: "", completed: false, createdAt: Date.now()
   };
+  if (t.dueTime && !t.dueDate) t.dueDate = todayISO();   // Uhrzeit ohne Datum → heute
   state.tasks.push(t);
   save();
   $("t-title").value = ""; $("t-assignee").value = ""; $("t-date").value = ""; $("t-group").value = "";
+  $("t-time").value = ""; $("t-end").value = "";
   $("t-recurrence").value = "none";
   renderTasks(); renderCalendar(); renderWeek(); updateStorageInfo();
   $("t-title").focus();
-  toast("Aufgabe erstellt.");
+  toast("Aufgabe erstellt" + (t.dueTime ? " · " + timeRange(t.dueTime, t.endTime) + " Uhr" : "") + "." + overlapHint(t));
   const willKalender = $("t-gcal").checked;
   $("t-gcal").checked = false;         // Vorgabe für die nächste Aufgabe
   if (willKalender) gSetTaskEvent(t, true);
@@ -1612,6 +1849,7 @@ function toggleTask(id) {
   if (!t) return;
   const snap = snapshot();
   t.completed = !t.completed;
+  t.doneAt = t.completed ? Date.now() : null;     // für den Wochenrückblick
   touch(t);
   let msg = t.completed ? "Erledigt." : "Wieder geöffnet.";
   if (t.completed) offerMemoCleanup(t.id);
@@ -1623,6 +1861,7 @@ function toggleTask(id) {
       gcalEventId: null,
       dueDate: next,
       completed: false,
+      doneAt: null,
       createdAt: Date.now(),
       // Der neue Durchgang startet frisch: Unterpunkte unerledigt,
       // Korrekturstapel wieder bei null.
@@ -1664,8 +1903,16 @@ function draftFor(t) {
    Der Termin entsteht erst, wenn der Nutzer dort auf Speichern tippt. */
 function openInGoogleCalendar(t) {
   if (!t.dueDate) return toast("Die Aufgabe hat kein Datum.");
-  const end = parseISO(t.dueDate); end.setDate(end.getDate() + 1);
-  const dates = t.dueDate.replace(/-/g,"") + "/" + isoOf(end).replace(/-/g,"");
+  let dates;
+  if (validTime(t.dueTime)) {
+    const st = t.dueTime.replace(":","") + "00";
+    const en = (validEnd(t.dueTime, t.endTime) ? t.endTime : addMinutes(t.dueTime, 30) || "23:59").replace(":","") + "00";
+    const d = t.dueDate.replace(/-/g,"");
+    dates = `${d}T${st}/${d}T${en}`;
+  } else {
+    const end = parseISO(t.dueDate); end.setDate(end.getDate() + 1);
+    dates = t.dueDate.replace(/-/g,"") + "/" + isoOf(end).replace(/-/g,"");
+  }
   const details = catName(t.categoryId) + " · Priorität " + (PRIO_LABEL[t.prio] || t.prio) + (t.note ? "\n\n" + t.note : "");
   const url = "https://calendar.google.com/calendar/render?action=TEMPLATE"
     + "&text=" + encodeURIComponent(t.title)
@@ -1709,28 +1956,226 @@ function fillSubjectSelects() {
   if (b) b.style.display = show ? "" : "none";
 }
 
-/* Nächster Termin eines Fachs im Wochenraster, ausgehend von heute. */
-function nextLessonFor(subject) {
-  if (!subject) return null;
-  const rows = state.lessons.filter(l => l.subject === subject);
-  if (!rows.length) return null;
-  const now = new Date();
-  const dow = ((now.getDay() + 6) % 7) + 1;
-  let best = null;
-  for (const l of rows) {
-    let diff = l.day - dow;
-    if (diff < 0) diff += 7;
-    const start = (state.settings.slots[l.slot] || "").split("-")[0] || "00:00";
-    if (diff === 0) {
-      const [h,m] = start.split(":").map(Number);
-      if (now.getHours()*60 + now.getMinutes() > h*60 + m) diff = 7;
+/* ================================================================
+   Unterricht: Kurse, tatsächliche Termine, Ausfall und Vertretung
+   Ein Kurs ist Fach + Klasse („Mathe|7b“). Fehlt die Klasse, zählt das
+   Fach allein. Alle Termine werden über echte Kalendertage berechnet:
+   Ferien, Feiertage und ausgefallene Stunden werden übersprungen.
+   ================================================================ */
+const normK = s => String(s || "").trim().toLowerCase().replace(/\s+/g, "");
+const courseKey = (subject, klass) => String(subject || "").trim() + "|" + String(klass || "").trim();
+const courseOf = l => courseKey(l.subject, l.klass);
+function courseLabel(key) {
+  const i = String(key).indexOf("|");
+  const s = i < 0 ? key : key.slice(0, i), k = i < 0 ? "" : key.slice(i + 1);
+  return k ? `${s} ${k}` : s;
+}
+const lessonLabel = l => l.subject + (l.klass ? " " + l.klass : "");
+const dowOf = iso => ((parseISO(iso).getDay() + 6) % 7) + 1;
+const addDaysISO = (iso, n) => { const d = parseISO(iso); d.setDate(d.getDate() + n); return isoOf(d); };
+const lessonHours = l => isDouble(l) ? 2 : 1;
+const lessonEndTime = l => slotEnd(isDouble(l) ? l.slot + 1 : l.slot);
+const nowMin = () => { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); };
+const shortDate = iso => parseISO(iso).toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit" });
+
+/* Ausfall/Vertretung einer Stunde an einem Tag. Feste Kennung je Stunde und
+   Datum, damit zwei Geräte denselben Eintrag nicht doppelt anlegen. */
+const exId = (lessonId, iso) => "x:" + lessonId + ":" + iso;
+const exOf = (lessonId, iso) => state.lessonEx.find(x => x.id === exId(lessonId, iso)) || null;
+const noteId = (key, iso) => "n:" + key + ":" + iso;
+const noteOf = (key, iso) => state.lessonNotes.find(n => n.id === noteId(key, iso)) || null;
+const minusId = (lessonId, iso) => "m:" + lessonId + ":" + iso;
+
+/* Unterrichtstag: im Stundenplan aktiv und weder Ferien noch Feiertag. */
+const schoolDay = iso => activeDays().indexOf(dowOf(iso)) > -1 && !holidayName(iso);
+function lessonsOn(iso) {
+  if (!schoolDay(iso)) return [];
+  const dow = dowOf(iso);
+  // Zweite Hälfte einer Doppelstunde ist kein eigener Eintrag.
+  return state.lessons.filter(l => l.day === dow).sort((a, b) => a.slot - b.slot);
+}
+const lessonHeld = (l, iso) => !exOf(l.id, iso);
+
+/* Passt eine Stunde zu Fach/Klasse einer Aufgabe? Ohne Klasse genügt das Fach;
+   ohne Fach (z. B. Klassenarbeits-Vorlage) genügt die Klasse. */
+function lessonMatches(l, subject, klass) {
+  if (subject && l.subject !== subject) return false;
+  if (klass && l.klass && normK(l.klass) !== normK(klass)) return false;
+  if (!subject && !(klass && l.klass)) return false;
+  return true;
+}
+
+/* Nächste stattfindende Stunde, die pred erfüllt, echt nach (afterISO, afterMin). */
+function nextLessonWhere(pred, afterISO, afterMin) {
+  for (let i = 0; i <= 200; i++) {
+    const iso = addDaysISO(afterISO, i);
+    for (const l of lessonsOn(iso)) {
+      if (!pred(l)) continue;
+      if (i === 0 && hhmm(slotStart(l.slot)) <= afterMin) continue;
+      if (!lessonHeld(l, iso)) continue;
+      return { iso, lesson: l };
     }
-    const cand = { diff, day: l.day, start };
-    if (!best || cand.diff < best.diff || (cand.diff === best.diff && cand.start < best.start)) best = cand;
   }
-  if (!best) return null;
-  const label = best.diff === 0 ? "heute" : best.diff === 1 ? "morgen" : DAY_SHORT[best.day];
-  return `${label} ${best.start}`;
+  return null;
+}
+const nextLessonOfCourse = (key, afterISO, afterMin) =>
+  nextLessonWhere(l => courseOf(l) === key, afterISO, afterMin);
+
+/* Stattfindende Stunden ab jetzt bis vor toISO (Doppelstunde zählt 2). */
+function countLessons(pred, toISO) {
+  const today = todayISO(), cur = nowMin();
+  let n = 0;
+  for (let iso = today, g = 0; iso < toISO && g < 400; iso = addDaysISO(iso, 1), g++) {
+    for (const l of lessonsOn(iso)) {
+      if (!pred(l) || !lessonHeld(l, iso)) continue;
+      if (iso === today && hhmm(slotStart(l.slot)) < cur) continue;
+      n += lessonHours(l);
+    }
+  }
+  return n;
+}
+
+/* Nächste Ferien ab morgen — ohne einzelne freie Tage. */
+function nextFerien() {
+  const today = todayISO();
+  const list = (state.settings.holidays || [])
+    .filter(h => h.s && h.e && h.s > today && h.e > h.s)
+    .sort((a, b) => a.s.localeCompare(b.s));
+  return list[0] || null;
+}
+const isExamTask = t => !!t.exam || /durchführung|klassenarbeit|klausur|lernkontrolle|\btest\b/i.test(t.title || "");
+/* Nächste Klassenarbeit eines Kurses (über Lerngruppe bzw. Fach der Aufgabe). */
+function nextExamFor(l) {
+  const today = todayISO();
+  return state.tasks
+    .filter(t => !t.completed && t.dueDate && t.dueDate >= today && isExamTask(t))
+    .filter(t => (l.klass && t.group && normK(t.group) === normK(l.klass) && (!t.subject || t.subject === l.subject))
+              || (!l.klass && t.subject === l.subject))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0] || null;
+}
+/* „Noch X Stunden …“ für einen Kurs, als Textzeilen. */
+function countLines(l) {
+  const key = courseOf(l), pred = x => courseOf(x) === key, out = [];
+  const ex = nextExamFor(l);
+  if (ex) out.push(`noch ${countLessons(pred, ex.dueDate)} Std. bis zur Klassenarbeit (${shortDate(ex.dueDate)})`);
+  const f = nextFerien();
+  if (f) out.push(`noch ${countLessons(pred, f.s)} Std. bis ${f.n || "zu den Ferien"}`);
+  return out;
+}
+/* Eine Stunde je Kurs als Stellvertreter (für Übersichten). */
+function courseReps() {
+  const m = new Map();
+  for (const l of [...state.lessons].sort((a, b) => a.day - b.day || a.slot - b.slot))
+    if (!m.has(courseOf(l))) m.set(courseOf(l), l);
+  return [...m.values()].sort((a, b) => lessonLabel(a).localeCompare(lessonLabel(b), "de"));
+}
+
+/* Nächster Termin für eine Aufgabe mit Fach/Lerngruppe — als kurzer Text. */
+function nextLessonFor(subject, klass) {
+  if (!subject) return null;
+  const nx = nextLessonWhere(l => lessonMatches(l, subject, klass), todayISO(), nowMin());
+  if (!nx) return null;
+  const d = daysUntil(nx.iso);
+  const label = d === 0 ? "heute" : d === 1 ? "morgen" : shortDate(nx.iso);
+  return `${label} ${slotStart(nx.lesson.slot)}`;
+}
+
+/* Merkzettel: Ziel ist jedes Mal neu die nächste stattfindende Stunde des
+   Kurses nach der Ursprungsstunde — fällt sie aus, wandert der Zettel weiter. */
+function memoTarget(m) {
+  return nextLessonOfCourse(m.course, m.after, hhmm(m.afterTime || "00:00"));
+}
+function memosFor(l, iso) {
+  const key = courseOf(l);
+  return state.lessonMemos.filter(m => m.course === key && !m.done)
+    .filter(m => { const t = memoTarget(m); return t && t.iso === iso && t.lesson.id === l.id; });
+}
+
+/* ---------- Zeitspannen bei Aufgaben ---------- */
+const validTime = s => /^([01]\d|2[0-3]):[0-5]\d$/.test(s || "");
+const validEnd = (a, b) => validTime(a) && validTime(b) && hhmm(b) > hhmm(a);
+const timeRange = (a, b) => validTime(a) ? a + (validEnd(a, b) ? "–" + b : "") : "";
+function addMinutes(hm, min) {
+  const t = hhmm(hm) + min;
+  if (t >= 24 * 60) return null;
+  return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+}
+/* Uhrzeiten aus dem Titel lesen und herausnehmen:
+   „Fußballtraining 18–19:30“, „18-19 Uhr“, „von 18 bis 19.30“, „18 Uhr 90 Min“,
+   „9:30“, „um 9“, „14 Uhr 1,5 Std“. „18-19“ ohne Uhr/Minuten/„von“ bleibt Text
+   (Seitenzahlen). Wortgrenzen über Lookarounds, weil \b keine Umlaute kennt. */
+function parseTimes(text) {
+  const QB = "(?<![\\p{L}\\d.:])", QE = "(?![\\p{L}\\d])";
+  let s = " " + text + " ", time = null, end = null;
+  const find = rx => new RegExp(rx, "iu").exec(s);
+  const cut = m => { s = s.slice(0, m.index) + " " + s.slice(m.index + m[0].length); };
+  const pad = (h, m) => String(+h).padStart(2, "0") + ":" + (m || "00");
+  const H = "([01]?\\d|2[0-3])", M = "(?:[:.]([0-5]\\d))?", U = "(\\s*(?:uhr|h))?";
+  let m = find(QB + "(von\\s+|um\\s+|ab\\s+)?" + H + M + U + "\\s*(?:-|–|—|bis)\\s*" + H + M + U + QE);
+  if (m && (m[1] || m[3] || m[4] || m[6] || m[7])) {
+    const a = pad(m[2], m[3]), b = pad(m[5], m[6]);
+    if (validTime(a)) { time = a; end = validEnd(a, b) ? b : null; cut(m); }
+  }
+  if (!time) {
+    for (const rx of [
+      QB + "(?:um\\s+)?([01]?\\d|2[0-3])[:.]([0-5]\\d)\\s*(?:uhr|h)" + QE,
+      QB + "(?:um\\s+)?([01]?\\d|2[0-3]):([0-5]\\d)" + QE,
+      QB + "(?:um\\s+)?([01]?\\d|2[0-3])\\s*(?:uhr|h)" + QE,
+      QB + "um\\s+([01]?\\d|2[0-3])(?![\\d.:])" + QE
+    ]) {
+      m = find(rx); if (!m) continue;
+      time = pad(m[1], m[2]); cut(m); break;
+    }
+  }
+  if (time && !end) {
+    const HN = "(\\d{1,2}(?:[,.]\\d{1,2})?|eine?|anderthalb|eineinhalb|zwei|drei|vier)";
+    const hoursOf = w => { w = w.toLowerCase();
+      if (w === "anderthalb" || w === "eineinhalb") return 1.5;
+      if (/^\d/.test(w)) return parseFloat(w.replace(",", "."));
+      return { ein:1, eine:1, zwei:2, drei:3, vier:4 }[w] || NaN; };
+    for (const [rx, fn] of [
+      [QB + "(?:für\\s+)?" + HN + "\\s*(?:std\\.?|stunden?|h)\\s+(?:und\\s+)?(\\d{1,2})\\s*(?:min\\.?|minuten)" + QE, x => hoursOf(x[1]) * 60 + (+x[2])],
+      [QB + "(?:für\\s+)?" + HN + "\\s*(?:std\\.?|stunden?)" + QE, x => hoursOf(x[1]) * 60],
+      [QB + "(?:für\\s+)?(\\d{1,3})\\s*(?:min\\.?|minuten)" + QE, x => +x[1]]
+    ]) {
+      m = find(rx); if (!m) continue;
+      const d = fn(m);
+      const e = d > 0 && d <= 16 * 60 ? addMinutes(time, Math.round(d)) : null;
+      if (e) { end = e; cut(m); }
+      break;
+    }
+  }
+  const title = s.replace(/\s{2,}/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim().replace(/[\s,;–-]+$/, "").trim();
+  return { title: title || text.trim(), time, end };
+}
+
+/* Überschneidung einer Aufgabe mit Uhrzeit mit Stunden, Aufsichten,
+   Google-Terminen und anderen Aufgaben — nur als Hinweis. */
+function overlapHint(t) {
+  if (!t || !t.dueDate || !validTime(t.dueTime)) return "";
+  const a = hhmm(t.dueTime), b = validEnd(t.dueTime, t.endTime) ? hhmm(t.endTime) : a + 30;
+  const items = [];
+  if (feat("timetable")) {
+    for (const l of lessonsOn(t.dueDate)) if (lessonHeld(l, t.dueDate))
+      items.push([hhmm(slotStart(l.slot)), hhmm(lessonEndTime(l)), lessonLabel(l)]);
+    const dow = dowOf(t.dueDate);
+    if (schoolDay(t.dueDate)) for (const d of state.duties.filter(x => x.day === dow)) {
+      const f = slotEnd(d.brk), e = slotStart(d.brk + 1);
+      if (f && e) items.push([hhmm(f), hhmm(e), d.text]);
+    }
+  }
+  for (const o of state.tasks) if (o.id !== t.id && !o.completed && o.dueDate === t.dueDate && validTime(o.dueTime))
+    items.push([hhmm(o.dueTime), validEnd(o.dueTime, o.endTime) ? hhmm(o.endTime) : hhmm(o.dueTime) + 30, o.title]);
+  // Eigene Aufgaben stehen auch als Termin im Google Kalender — die nicht doppelt zählen.
+  const own = new Set(state.tasks.map(o => o.gcalEventId).filter(Boolean));
+  for (const ev of (typeof gCalFor === "function" ? gCalFor(t.dueDate) : []))
+    if (!ev.allDay && !own.has(ev.id) && /^\d{2}:\d{2}/.test(ev.time || "")) {
+      const s0 = hhmm(ev.time.slice(0, 5));
+      const e0 = /^\d{2}:\d{2}/.test(ev.end || "") ? hhmm(ev.end) : s0 + 30;
+      items.push([s0, e0, ev.title || "Termin"]);
+    }
+  const hit = items.find(([s0, e0]) => a < e0 && s0 < b);
+  return hit ? ` Überschneidet sich mit „${hit[2]}“.` : "";
 }
 
 /* ---------- Erinnerungen ----------
@@ -1775,6 +2220,11 @@ async function remStatus() {
 }
 
 async function updateReminderStatus() {
+  const intro = $("rem-intro");
+  if (intro) intro.textContent = isNative()
+    ? "Du nutzt die Android-App (APK). Erinnerungen werden beim Betriebssystem eingeplant und erscheinen auch bei geschlossener App."
+    : "Du nutzt MyToDo als Web-App (PWA bzw. im Browser). Hier erscheinen Erinnerungen nur, solange die App geöffnet ist. "
+      + "Zuverlässig auch bei geschlossener App sind die Erinnerungen der Google-Kalendertermine (Karte „Google-Konto“).";
   const s = $("rem-status"); if (!s) return;
   const p = await remStatus();
   const mode = isNative()
@@ -2025,14 +2475,7 @@ function renderTasks() {
         : daysUntil(t.dueDate) === 1 ? "Morgen"
         : daysUntil(t.dueDate) <= 7 ? "Diese Woche" : "Später";
       if (g !== lastGroup) {
-        const head = el("div","grp" + (g === "Überfällig" ? " warn" : ""), g);
-        if (g === "Überfällig") {
-          const b = el("button","btn-sm","Alle auf heute");
-          b.style.marginLeft = "10px";
-          b.onclick = bulkOverdueToToday;
-          head.append(b);
-        }
-        box.append(head); lastGroup = g;
+        box.append(g === "Überfällig" ? overdueHead() : el("div","grp", g)); lastGroup = g;
       }
     }
     box.append(taskCard(t, today));
@@ -2062,12 +2505,13 @@ function taskCard(t, today) {
   meta.append(el("span","badge pri pri-" + t.prio, PRIO_LABEL[t.prio] || t.prio));
   if (t.group) meta.append(el("span","badge grp-b", t.group));
   if (t.dueDate) {
-    const lbl = overdue ? `📅 ${deDate(t.dueDate)} · überfällig` : soon ? "📅 heute" : `📅 ${deDate(t.dueDate)}`;
+    const tm = t.dueTime ? " · " + timeRange(t.dueTime, t.endTime) : "";
+    const lbl = overdue ? `📅 ${deDate(t.dueDate)}${tm} · überfällig` : soon ? `📅 heute${tm}` : `📅 ${deDate(t.dueDate)}${tm}`;
     meta.append(el("span", overdue ? "over" : soon ? "soon" : null, lbl));
   }
   if (t.recurrence && t.recurrence !== "none") meta.append(el("span",null,"🔄 " + (REC_LABEL[t.recurrence] || t.recurrence)));
   if (t.subject && feat("timetable")) {
-    const nx = nextLessonFor(t.subject);
+    const nx = nextLessonFor(t.subject, t.group);
     meta.append(el("span",null,"📚 " + t.subject + (nx ? " · nächste Stunde " + nx : "")));
   }
   if (t.assignee && feat("assignee")) meta.append(el("span",null,"👤 " + t.assignee));
@@ -2381,6 +2825,8 @@ function openTaskDialog(id) {
   $("e-category").value = t.categoryId || "";
   $("e-prio").value = t.prio;
   $("e-date").value = t.dueDate || "";
+  $("e-time").value = t.dueTime || "";
+  $("e-end").value = t.endTime || "";
   $("e-recurrence").value = t.recurrence || "none";
   $("e-skiphol").value = t.skipHol === true ? "yes" : t.skipHol === false ? "no" : "auto";
   $("e-gcal").checked = !!t.gcalEventId;
@@ -2406,9 +2852,13 @@ $("e-save").onclick = () => {
   const title = $("e-title").value.trim();
   if (!title) return toast("Titel darf nicht leer sein.");
   const corr = parseInt($("e-corr").value, 10);
+  const dueTime = $("e-time").value || null;
+  const endTime = readEnd(dueTime, $("e-end").value);
+  if (endTime === false) { $("e-end").focus(); return toast("Das Ende liegt vor dem Beginn."); }
   Object.assign(t, {
     title, categoryId: $("e-category").value || null,
     prio: $("e-prio").value, dueDate: $("e-date").value || null,
+    dueTime: validTime(dueTime) ? dueTime : null, endTime: endTime || null,
     recurrence: $("e-recurrence").value,
     // null = automatisch nach Kategorie
     skipHol: $("e-skiphol").value === "yes" ? true : $("e-skiphol").value === "no" ? false : null,
@@ -2420,8 +2870,9 @@ $("e-save").onclick = () => {
     subtasks: draftSubs,
     note: $("e-note").value.trim()
   });
+  if (t.dueTime && !t.dueDate) t.dueDate = todayISO();
   touch(t);
-  save(); $("dlg-task").close(); renderTasks(); renderCalendar(); renderWeek(); toast("Gespeichert.");
+  save(); $("dlg-task").close(); renderTasks(); renderCalendar(); renderWeek(); toast("Gespeichert." + overlapHint(t));
   const soll = $("e-gcal").checked, ist = !!t.gcalEventId;
   if (!t.calTimed && soll !== ist) gSetTaskEvent(t, soll);
   else gAutoCal(t);
@@ -2601,10 +3052,10 @@ $("btn-add-lesson").onclick = () => {
   const day = +$("tt-day").value, slot = +$("tt-slot").value;
   const span = ($("tt-dbl").checked && canDouble(slot)) ? 2 : 1;
   clearSlots(day, slot, span);
-  state.lessons.push({ id: uid(), day, slot, span, subject,
+  state.lessons.push({ id: uid(), day, slot, span, subject, klass: $("tt-klass").value.trim() || null,
     room: $("tt-room").value.trim() || null, color: TT_DEFAULT_COLOR, createdAt: Date.now() });
   save(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo();
-  $("tt-subject").value = ""; $("tt-room").value = "";
+  $("tt-subject").value = ""; $("tt-room").value = ""; $("tt-klass").value = "";
   toast(span === 2 ? "Doppelstunde eingetragen." : "Stunde eingetragen.");
 };
 
@@ -2663,7 +3114,7 @@ function renderTimetable() {
         cell.classList.add("full");
         cell.style.background = l.color || TT_DEFAULT_COLOR;
         cell.style.borderColor = l.color || TT_DEFAULT_COLOR;
-        cell.append(el("div","subj", l.subject));
+        cell.append(el("div","subj", lessonLabel(l)));
         if (l.room) cell.append(el("div","room", l.room));
         cell.onclick = () => openLessonDialog(l, d, r.si);
       } else {
@@ -2672,6 +3123,8 @@ function renderTimetable() {
       g.append(cell);
     });
   });
+  renderCountCard();
+  renderSubOverview();
 }
 
 /* Farbfelder aufbauen; die Auswahl schreibt in das Farbfeld des Dialogs. */
@@ -2698,7 +3151,9 @@ function openLessonDialog(lesson, day, slot) {
   $("l-head").textContent = `${DAY_NAMES[day]}, ` +
     (span === 2 ? `${slot+1}.+${slot+2}. Stunde` : `${slot+1}. Stunde`);
   $("l-subject").value = lesson ? lesson.subject : "";
+  $("l-klass").value   = lesson && lesson.klass ? lesson.klass : "";
   $("l-room").value    = lesson && lesson.room ? lesson.room : "";
+  $("l-hist").style.display = lesson ? "" : "none";
   const col = (lesson && lesson.color) ? lesson.color : TT_DEFAULT_COLOR;
   $("l-color").value = col;
   renderSwatches(col);
@@ -2715,6 +3170,7 @@ $("l-save").onclick = () => {
   if (!subject) return toast("Bitte ein Fach eingeben.");
   const lesson = editingLesson.lesson, day = editingLesson.day, slot = editingLesson.slot;
   const room = $("l-room").value.trim() || null, color = $("l-color").value;
+  const klass = $("l-klass").value.trim() || null;
   const span = ($("l-dbl").checked && canDouble(slot)) ? 2 : 1;
   // Wird zur Doppelstunde erweitert, muss die Folgestunde weichen.
   if (span === 2) {
@@ -2722,8 +3178,12 @@ $("l-save").onclick = () => {
     if (next && !confirm(`„${next.subject}“ in der ${slot+2}. Stunde wird durch die Doppelstunde ersetzt. Fortfahren?`)) return;
     if (next) { markDeleted(next.id); state.lessons = state.lessons.filter(x => x.id !== next.id); }
   }
-  if (lesson) { Object.assign(lesson, { subject, room, color, span }); touch(lesson); }
-  else state.lessons.push({ id: uid(), day, slot, span, subject, room, color, createdAt: Date.now() });
+  if (lesson) {
+    const oldKey = courseOf(lesson);
+    Object.assign(lesson, { subject, klass, room, color, span }); touch(lesson);
+    moveCourse(oldKey, courseOf(lesson));
+  }
+  else state.lessons.push({ id: uid(), day, slot, span, subject, klass, room, color, createdAt: Date.now() });
   save(); $("dlg-lesson").close(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo();
 };
 $("l-cancel").onclick = () => $("dlg-lesson").close();
@@ -2734,6 +3194,20 @@ $("l-del").onclick = () => {
   state.lessons = state.lessons.filter(x => x.id !== lesson.id);
   save(); $("dlg-lesson").close(); renderTimetable(); renderWeek(); fillSubjectSelects(); updateStorageInfo(); toast("Gelöscht.");
 };
+
+/* Fach oder Klasse umbenannt: Notizen und Merkzettel ziehen mit — aber nur,
+   wenn keine andere Stunde den alten Kurs noch benutzt. */
+function moveCourse(oldKey, newKey) {
+  if (oldKey === newKey || state.lessons.some(l => courseOf(l) === oldKey)) return;
+  for (const n of state.lessonNotes.filter(x => x.course === oldKey)) {
+    const nid = noteId(newKey, n.date);
+    if (state.lessonNotes.some(x => x.id === nid)) continue;   // dort gibt es schon eine Notiz
+    markDeleted(n.id);
+    state.lessonNotes = state.lessonNotes.filter(x => x.id !== n.id);
+    state.lessonNotes.push({ ...n, id: nid, course: newKey, updatedAt: Date.now() });
+  }
+  for (const m of state.lessonMemos.filter(x => x.course === oldKey)) { m.course = newKey; touch(m); }
+}
 
 /* ---------- Aufsichten in den Pausen ---------- */
 let editingDuty = null;
@@ -2770,6 +3244,324 @@ $("d-del").onclick = () => {
   toast("Aufsicht gelöscht.");
 };
 $("d-text").onkeydown = e => { if (e.key === "Enter") $("d-save").click(); };
+
+/* ================================================================
+   Stunde an einem Tag: Ausfall/Vertretung, Notiz, Merkzettel,
+   Hausaufgabe bis zur nächsten Stunde, „Noch X Stunden“
+   ================================================================ */
+let ldCur = null;   // { lessonId, iso }
+const ldLesson = () => ldCur && state.lessons.find(x => x.id === ldCur.lessonId);
+
+function openLessonDay(l, iso) {
+  ldCur = { lessonId: l.id, iso };
+  const h = lessonHours(l);
+  $("ld-head").textContent = lessonLabel(l);
+  $("ld-sub").textContent =
+    parseISO(iso).toLocaleDateString("de-DE", { weekday:"long", day:"2-digit", month:"2-digit" })
+    + ` · ${h === 2 ? `${l.slot+1}.+${l.slot+2}.` : `${l.slot+1}.`} Stunde (${slotStart(l.slot)}–${lessonEndTime(l)})`
+    + (l.room ? " · " + l.room : "");
+  const ex = exOf(l.id, iso);
+  $("ld-status").value = ex ? ex.type : "";
+  $("ld-extext").value = ex && ex.text ? ex.text : "";
+  $("ld-minus").checked = state.subLog.some(s => s.id === minusId(l.id, iso));
+  $("ld-minus-lbl").textContent = `als Minusstunde zählen (${h} Std.)`;
+  const n = noteOf(courseOf(l), iso);
+  $("ld-note").value = n ? n.text : "";
+  $("ld-memo-new").value = ""; $("ld-hw").value = "";
+  ldUpdateStatusUI();
+  ldRenderMemos();
+  ldRenderNext();
+  const lines = countLines(l);
+  $("ld-count").textContent = lines.length ? lessonLabel(l) + ": " + lines.join(" · ") + "." : "";
+  $("dlg-lday").showModal();
+}
+function ldUpdateStatusUI() {
+  const st = $("ld-status").value;
+  $("ld-minus-row").style.display = st ? "flex" : "none";
+  $("ld-extext").style.display = st ? "" : "none";
+}
+$("ld-status").onchange = ldUpdateStatusUI;
+
+/* Merkzettel: die für diese Stunde fälligen und die von hier aus gemerkten. */
+function ldRenderMemos() {
+  const box = $("ld-memos"); box.replaceChildren();
+  const l = ldLesson(); if (!l) return;
+  const iso = ldCur.iso, key = courseOf(l);
+  const due = memosFor(l, iso);
+  const fromHere = state.lessonMemos.filter(m => m.course === key && m.after === iso && due.indexOf(m) < 0);
+  if (!due.length && !fromHere.length) return;
+  const row = (m, label) => {
+    const r = el("div","memo-row");
+    r.append(el("span", null, "📌 " + m.text));
+    if (label) r.append(el("span","pt", label));
+    const b = el("button","btn-sm", due.indexOf(m) > -1 ? "✓ Erledigt" : "✕");
+    b.title = due.indexOf(m) > -1 ? "Erledigt — Zettel entfernen" : "Zettel löschen";
+    b.onclick = () => {
+      markDeleted(m.id);
+      state.lessonMemos = state.lessonMemos.filter(x => x.id !== m.id);
+      save(); ldRenderMemos(); renderWeek();
+    };
+    r.append(b);
+    return r;
+  };
+  if (due.length) { box.append(el("label","fld","Für diese Stunde gemerkt")); due.forEach(m => box.append(row(m))); }
+  if (fromHere.length) {
+    box.append(el("label","fld","Von hier aus gemerkt"));
+    fromHere.forEach(m => { const t = memoTarget(m); box.append(row(m, t ? "für " + shortDate(t.iso) : "")); });
+  }
+}
+function ldRenderNext() {
+  const l = ldLesson(); if (!l) return;
+  const nx = nextLessonOfCourse(courseOf(l), ldCur.iso, hhmm(lessonEndTime(l)));
+  $("ld-next").textContent = nx
+    ? `Nächste Stunde ${lessonLabel(l)}: ${shortDate(nx.iso)}, ${slotStart(nx.lesson.slot)} Uhr.`
+    : "Keine weitere Stunde dieser Klasse in den nächsten Monaten gefunden.";
+}
+$("ld-memo-add").onclick = () => {
+  const l = ldLesson(); if (!l) return;
+  const text = $("ld-memo-new").value.trim();
+  if (!text) { $("ld-memo-new").focus(); return toast("Bitte den Merkzettel-Text eingeben."); }
+  const m = { id: uid(), course: courseOf(l), after: ldCur.iso, afterTime: lessonEndTime(l), text, createdAt: Date.now() };
+  state.lessonMemos.push(m);
+  save(); $("ld-memo-new").value = ""; ldRenderMemos(); renderWeek();
+  const t = memoTarget(m);
+  toast(t ? "Gemerkt für " + shortDate(t.iso) + "." : "Gemerkt — erscheint bei der nächsten Stunde.");
+};
+$("ld-memo-new").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); $("ld-memo-add").click(); } };
+
+/* Kategorie für Unterrichtsaufgaben: „Unterricht“, sonst die erste schulische. */
+function unterrichtCat() {
+  return (state.categories.find(c => /unterricht/i.test(c.name))
+       || state.categories.find(c => c.school) || {}).id || null;
+}
+$("ld-hw-add").onclick = () => {
+  const l = ldLesson(); if (!l) return;
+  const text = $("ld-hw").value.trim();
+  if (!text) { $("ld-hw").focus(); return toast("Bitte die Hausaufgabe eingeben."); }
+  const nx = nextLessonOfCourse(courseOf(l), ldCur.iso, hhmm(lessonEndTime(l)));
+  if (!nx) return toast("Keine nächste Stunde dieser Klasse gefunden.");
+  const t = { id: uid(), title: `HA ${lessonLabel(l)}: ${text}`, categoryId: unterrichtCat(), prio: "mittel",
+    dueDate: nx.iso, dueTime: null, endTime: null, recurrence: "none", assignee: null,
+    subject: l.subject, group: l.klass || null, subtasks: [], note: "", completed: false, createdAt: Date.now() };
+  state.tasks.push(t);
+  save(); $("ld-hw").value = "";
+  renderTasks(); renderCalendar(); renderWeek(); updateStorageInfo();
+  toast("Hausaufgabe für " + shortDate(nx.iso) + " angelegt.");
+  gAutoCal(t);
+};
+$("ld-hw").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); $("ld-hw-add").click(); } };
+
+$("ld-save").onclick = () => {
+  const l = ldLesson();
+  if (!l) { $("dlg-lday").close(); return; }
+  const iso = ldCur.iso, key = courseOf(l);
+  // Ausfall / Vertretung
+  const st = $("ld-status").value, text = $("ld-extext").value.trim() || null;
+  const xid = exId(l.id, iso), ex = exOf(l.id, iso);
+  if (st) {
+    if (!ex) state.lessonEx.push({ id: xid, lessonId: l.id, date: iso, type: st, text, createdAt: Date.now() });
+    else if (ex.type !== st || (ex.text || null) !== text) { ex.type = st; ex.text = text; touch(ex); }
+  } else if (ex) {
+    markDeleted(xid); state.lessonEx = state.lessonEx.filter(x => x.id !== xid);
+  }
+  // Minusstunde (hängt mit fester Kennung an Stunde und Tag — kein Doppel-Eintrag)
+  const mid = minusId(l.id, iso), mi = state.subLog.find(s => s.id === mid);
+  const wantMinus = !!st && $("ld-minus").checked;
+  if (wantMinus && !mi) {
+    state.subLog.push({ id: mid, date: iso, type: "minus", hours: lessonHours(l), slot: l.slot,
+      klass: l.klass || null, subject: l.subject, note: text, lessonId: l.id, createdAt: Date.now() });
+  } else if (wantMinus && mi && (mi.hours !== lessonHours(l) || (mi.note || null) !== text)) {
+    mi.hours = lessonHours(l); mi.note = text; touch(mi);
+  } else if (!wantMinus && mi) {
+    markDeleted(mid); state.subLog = state.subLog.filter(s => s.id !== mid);
+  }
+  // Notiz zur Stunde
+  const nid = noteId(key, iso), n = noteOf(key, iso), nt = $("ld-note").value.trim();
+  if (nt) {
+    if (!n) state.lessonNotes.push({ id: nid, course: key, date: iso, text: nt, createdAt: Date.now() });
+    else if (n.text !== nt) { n.text = nt; touch(n); }
+  } else if (n) {
+    markDeleted(nid); state.lessonNotes = state.lessonNotes.filter(x => x.id !== nid);
+  }
+  save(); $("dlg-lday").close();
+  renderWeek(); renderTimetable(); updateStorageInfo();
+  toast("Gespeichert.");
+};
+$("ld-cancel").onclick = () => $("dlg-lday").close();
+$("ld-hist").onclick = () => { const l = ldLesson(); if (!l) return; $("dlg-lday").close(); openHistory(courseOf(l)); };
+$("ld-edit").onclick = () => { const l = ldLesson(); if (!l) return; $("dlg-lday").close(); openLessonDialog(l, l.day, l.slot); };
+
+/* ---------- Verlauf der Stundennotizen eines Kurses ---------- */
+let lhKey = null;
+function historyText(key) {
+  const notes = state.lessonNotes.filter(n => n.course === key && n.text).sort((a,b) => b.date.localeCompare(a.date));
+  return courseLabel(key) + "\n\n" + notes.map(n => `${shortDate(n.date)}: ${n.text}`).join("\n\n");
+}
+function openHistory(key) {
+  lhKey = key;
+  $("lh-head").textContent = "Verlauf · " + courseLabel(key);
+  const box = $("lh-list"); box.replaceChildren();
+  const open = state.lessonMemos.filter(m => m.course === key && !m.done);
+  for (const m of open) {
+    const t = memoTarget(m);
+    const r = el("div","memo-row");
+    r.append(el("span",null,"📌 " + m.text), el("span","pt", t ? "für " + shortDate(t.iso) : "offen"));
+    box.append(r);
+  }
+  const notes = state.lessonNotes.filter(n => n.course === key && n.text).sort((a,b) => b.date.localeCompare(a.date));
+  if (!notes.length) box.append(el("p","empty","Noch keine Notizen zu dieser Klasse."));
+  for (const n of notes) {
+    const r = el("div","lh-row");
+    r.append(el("div","lh-d", shortDate(n.date)), el("div","lh-t", n.text));
+    const l = lessonsOn(n.date).find(x => courseOf(x) === key);
+    if (l) { r.style.cursor = "pointer"; r.onclick = () => { $("dlg-lhist").close(); openLessonDay(l, n.date); }; }
+    box.append(r);
+  }
+  $("dlg-lhist").showModal();
+}
+$("lh-close").onclick = () => $("dlg-lhist").close();
+$("lh-share").onclick = () => shareText(historyText(lhKey), "Verlauf " + courseLabel(lhKey));
+$("l-hist").onclick = () => {
+  const l = editingLesson && editingLesson.lesson;
+  if (!l) return toast("Erst die Stunde speichern.");
+  $("dlg-lesson").close(); openHistory(courseOf(l));
+};
+
+/* Text teilen: Teilen-Menü des Geräts, sonst Zwischenablage. */
+async function shareText(text, title) {
+  try {
+    if (navigator.share) { await navigator.share({ title, text }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(text); toast("In die Zwischenablage kopiert."); }
+  catch { toast("Teilen ist hier nicht möglich."); }
+}
+
+/* ---------- Mehr- und Minderstunden ---------- */
+const SUB_LABEL = { plus: "Vertretung", minus: "Minusstunde", aufsicht: "Vertr.-Aufsicht" };
+let sbCur = null;
+function openSubDialog(s, iso) {
+  // Minusstunden einer eigenen Stunde werden in deren Dialog gepflegt.
+  if (s && s.lessonId) {
+    const l = state.lessons.find(x => x.id === s.lessonId);
+    if (l) return openLessonDay(l, s.date);
+  }
+  sbCur = s || null;
+  $("sb-head").textContent = s ? "Eintrag bearbeiten" : "Vertretung eintragen";
+  const sel = $("sb-slot"); sel.replaceChildren();
+  state.settings.slots.forEach((t, i) => sel.append(new Option(`${i+1}. Stunde (${t})`, i)));
+  $("sb-type").value = s ? s.type : "plus";
+  $("sb-date").value = s ? s.date : (iso || todayISO());
+  sel.value = String(s && Number.isFinite(s.slot) ? s.slot : 0);
+  $("sb-hours").value = String(s && s.hours === 2 ? 2 : 1);
+  $("sb-klass").value = s && s.klass ? s.klass : "";
+  $("sb-subject").value = s && s.subject ? s.subject : "";
+  $("sb-note").value = s && s.note ? s.note : "";
+  $("sb-del").hidden = !s;
+  $("dlg-sub").showModal();
+}
+$("sb-cancel").onclick = () => $("dlg-sub").close();
+$("sb-save").onclick = () => {
+  const date = $("sb-date").value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return toast("Bitte ein Datum wählen.");
+  const v = { date, type: $("sb-type").value, slot: +$("sb-slot").value || 0, hours: +$("sb-hours").value === 2 ? 2 : 1,
+    klass: $("sb-klass").value.trim() || null, subject: $("sb-subject").value.trim() || null,
+    note: $("sb-note").value.trim() || null };
+  if (sbCur) { Object.assign(sbCur, v); touch(sbCur); }
+  else state.subLog.push({ id: uid(), ...v, createdAt: Date.now() });
+  save(); $("dlg-sub").close();
+  renderWeek(); renderSubOverview();
+  toast(SUB_LABEL[v.type] + " gespeichert.");
+};
+$("sb-del").onclick = () => {
+  if (!sbCur) return;
+  const snap = snapshot();
+  markDeleted(sbCur.id);
+  state.subLog = state.subLog.filter(x => x.id !== sbCur.id);
+  save(); $("dlg-sub").close(); renderWeek(); renderSubOverview();
+  toast("Gelöscht.", () => restore(snap));
+};
+
+/* Zeitraum: Monat, Halbjahr (Aug–Jan, Feb–Jul), Schuljahr (ab 1. August), alles. */
+function subRange(kind) {
+  const t = parseISO(todayISO()), y = t.getFullYear(), m = t.getMonth() + 1;
+  if (kind === "month") return [isoOf(new Date(y, m - 1, 1, 12)), isoOf(new Date(y, m, 0, 12))];
+  const sy = m >= 8 ? y : y - 1;
+  if (kind === "year") return [`${sy}-08-01`, `${sy + 1}-07-31`];
+  if (kind === "half") return (m >= 8 || m === 1) ? [`${sy}-08-01`, `${sy + 1}-01-31`] : [`${y}-02-01`, `${y}-07-31`];
+  return ["0000-01-01", "9999-12-31"];
+}
+function subSummary(list) {
+  const sum = type => list.filter(s => s.type === type).reduce((n, s) => n + (s.hours || 1), 0);
+  const plus = sum("plus"), minus = sum("minus"), auf = sum("aufsicht");
+  return { plus, minus, auf, saldo: plus - minus };
+}
+function subInRange() {
+  const [a, b] = subRange($("sub-range").value);
+  return state.subLog.filter(s => s.date >= a && s.date <= b)
+    .sort((x, y) => y.date.localeCompare(x.date) || (y.slot || 0) - (x.slot || 0));
+}
+const subLine = s => `${shortDate(s.date)} · ${(s.slot || 0) + 1}. Std. · ${SUB_LABEL[s.type]}`
+  + (s.klass ? " " + s.klass : "") + (s.subject ? " " + s.subject : "")
+  + (s.hours === 2 ? " (2 Std.)" : "") + (s.note ? " – " + s.note : "");
+function renderSubOverview() {
+  const tiles = $("sub-tiles"), box = $("sub-list");
+  if (!tiles || !box) return;
+  tiles.replaceChildren(); box.replaceChildren();
+  const list = subInRange(), s = subSummary(list);
+  const tile = (n, lbl, cls) => { const d = el("div","sub-tile" + (cls ? " " + cls : "")); d.append(el("b",null,String(n)), el("span",null,lbl)); tiles.append(d); };
+  tile(s.plus ? "+" + s.plus : "0", "Mehrstunden", "pos");
+  tile(s.minus ? "−" + s.minus : "0", "Minderstunden", "neg");
+  tile((s.saldo > 0 ? "+" : s.saldo < 0 ? "−" : "") + Math.abs(s.saldo), "Saldo");
+  tile(s.auf, "Aufsichten");
+  if (!list.length) { box.append(el("p","empty","Keine Einträge in diesem Zeitraum.")); return; }
+  for (const x of list) {
+    const r = el("div","sub-row " + x.type);
+    r.append(el("span", null, subLine(x)));
+    const del = el("button","btn-sm danger","✕");
+    del.title = "Löschen";
+    del.onclick = e => {
+      e.stopPropagation();
+      const snap = snapshot();
+      markDeleted(x.id);
+      state.subLog = state.subLog.filter(y => y.id !== x.id);
+      // Gehört die Minusstunde zu einem Ausfall, bleibt der Ausfall bestehen.
+      save(); renderSubOverview(); renderWeek();
+      toast("Gelöscht.", () => restore(snap));
+    };
+    r.append(del);
+    r.onclick = () => openSubDialog(x, x.date);
+    box.append(r);
+  }
+}
+$("sub-range").onchange = renderSubOverview;
+$("sub-share").onclick = () => {
+  const list = subInRange(), s = subSummary(list);
+  const rng = $("sub-range").selectedOptions[0].textContent;
+  const text = `Mehr- und Minderstunden · ${rng}\n`
+    + `Mehrstunden: ${s.plus} · Minderstunden: ${s.minus} · Saldo: ${s.saldo > 0 ? "+" : ""}${s.saldo} · Aufsichten: ${s.auf}\n\n`
+    + (list.length ? [...list].reverse().map(subLine).join("\n") : "Keine Einträge.");
+  shareText(text, "Mehr- und Minderstunden");
+};
+
+/* ---------- Noch … Stunden (Übersicht im Stundenplan) ---------- */
+function renderCountCard() {
+  const box = $("tt-count"); if (!box) return;
+  box.replaceChildren();
+  const reps = courseReps();
+  if (!reps.length) { box.append(el("p","empty","Noch keine Stunden im Stundenplan.")); return; }
+  let any = false;
+  for (const l of reps) {
+    const lines = countLines(l);
+    if (!lines.length) continue;
+    any = true;
+    const r = el("div","cnt-row");
+    const b = el("b", null, lessonLabel(l));
+    b.style.background = l.color || TT_DEFAULT_COLOR;
+    r.append(b, el("span", null, lines.join(" · ")));
+    box.append(r);
+  }
+  if (!any) box.append(el("p","empty","Keine anstehenden Klassenarbeiten oder Ferien gefunden."));
+}
 
 /* ---------- Einkaufsliste ---------- */
 function addItem() {
@@ -2937,7 +3729,7 @@ $("file-import").onchange = e => {
       // Importierte Einträge frisch stempeln, damit der Geräteabgleich sie
       // nicht gleich wieder mit dem alten Drive-Stand überschreibt.
       const nowTs = Date.now();
-      for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"])
+      for (const k of LISTS)
         for (const o of (state[k] || [])) { o.updatedAt = nowTs; delete state.tombs[o.id]; }
       save(); initUI(); renderAll(); toast("Import erfolgreich.");
     } catch (err) { alert("Import fehlgeschlagen: " + err.message); }
@@ -2955,11 +3747,16 @@ $("btn-ics").onclick = async () => {
   const out = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ToDo Organizer//DE","CALSCALE:GREGORIAN"];
   for (const t of list) {
     const end = parseISO(t.dueDate); end.setDate(end.getDate() + 1);
+    const d = t.dueDate.replace(/-/g,"");
+    const zeit = validTime(t.dueTime)
+      // Ortszeit ohne Zeitzone („floating“) — jedes Kalenderprogramm liest sie als lokale Uhrzeit.
+      ? [`DTSTART:${d}T${t.dueTime.replace(":","")}00`,
+         `DTEND:${d}T${(validEnd(t.dueTime, t.endTime) ? t.endTime : (addMinutes(t.dueTime, 30) || "23:59")).replace(":","")}00`]
+      : [`DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${isoOf(end).replace(/-/g,"")}`];
     out.push("BEGIN:VEVENT",
       `UID:${t.id}@todo-organizer.local`,
       `DTSTAMP:${stamp}`,
-      `DTSTART;VALUE=DATE:${t.dueDate.replace(/-/g,"")}`,
-      `DTEND;VALUE=DATE:${isoOf(end).replace(/-/g,"")}`,
+      ...zeit,
       `SUMMARY:${esc(t.title)}`,
       `DESCRIPTION:${esc(catName(t.categoryId) + " · Priorität " + (PRIO_LABEL[t.prio] || t.prio) + (t.note ? "\n" + t.note : ""))}`,
       "END:VEVENT");
@@ -2988,7 +3785,7 @@ $("btn-reset").onclick = () => {
   openNotes.clear();
   // Löschmarken für alles Bisherige, sonst bringt der Abgleich es zurück.
   const oldIds = [];
-  for (const k of ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories"])
+  for (const k of LISTS)
     for (const o of (state[k] || [])) oldIds.push(o.id);
   state = DEFAULT_STATE();
   const ts = Date.now();
@@ -3150,10 +3947,10 @@ function renderAlarms() {
 
   // 1) Google war einmal verbunden, die Anmeldung ist aber erloschen.
   const warVerbunden = !!lsGet(GFLAG_KEY) && !!gClientId();
-  if (gAuthChecked && warVerbunden && !gSignedIn() && !alarmMuted("auth")) {
+  if (gAuthChecked && warVerbunden && !gSignedIn() && !gTokenWait && !alarmMuted("auth")) {
     box.append(alarmBox("red", "⚠️",
       "Nicht mit Google verbunden",
-      "Änderungen werden gerade nicht in Google Drive gesichert und nicht auf deine anderen Geräte übertragen."
+      "Änderungen werden gerade nicht in Google Drive gesichert und nicht auf deine anderen Geräte übertragen. Sie bleiben vorgemerkt und gehen hoch, sobald die Verbindung steht."
       + (lastSync() ? ` Letzter Abgleich: ${deDateTime(lastSync())}.` : ""),
       "Jetzt verbinden",
       () => { switchTo("settings"); setTimeout(() => $("btn-g-connect").click(), 150); },
@@ -3200,27 +3997,20 @@ function renderWeek() {
   const su = new Date(mo); su.setDate(mo.getDate()+6);
   $("wk-title").textContent = `KW ${isoWeek(mo)} · ${mo.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"})} – ${su.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"})}`;
 
+  renderReview();
+
   // Überfällige Aufgaben nur in der aktuellen Woche oben zeigen.
   const ov = $("wk-overdue"); ov.replaceChildren();
   if (weekOffset === 0) {
     const today = todayISO();
     const over = state.tasks.filter(t => !t.completed && t.dueDate && t.dueDate < today)
       .sort((a,b) => a.dueDate.localeCompare(b.dueDate));
-    if (over.length) {
-      const head = el("div","grp warn","Überfällig");
-      const b = el("button","btn-sm","Alle auf heute");
-      b.style.marginLeft = "10px";
-      b.onclick = bulkOverdueToToday;
-      head.append(b);
-      ov.append(head);
-      over.slice(0,8).forEach(t => ov.append(weekTaskRow(t, true)));
-      if (over.length > 8) ov.append(el("p","hint",`+ ${over.length-8} weitere unter Aufgaben → Überfällig`));
-    }
+    if (over.length) ov.append(overdueHead(), ...over.slice(0,8).map(t => weekTaskRow(t, true)));
+    if (over.length > 8) ov.append(el("p","hint",`+ ${over.length-8} weitere unter Aufgaben → Überfällig`));
   }
 
   // Die Woche zeigt immer alle sieben Tage: private Aufgaben fallen auch auf
   // Samstag und Sonntag, unabhängig davon, ob der Stundenplan sie ausblendet.
-  const ttDays = activeDays();
   const today = todayISO();
   for (let dow = 1; dow <= 7; dow++) {
     const d = new Date(mo); d.setDate(mo.getDate() + dow - 1);
@@ -3242,52 +4032,135 @@ function renderWeek() {
       body.append(g);
     }
     // Stundenplan des Tages (an Ferientagen/Feiertagen ausgeblendet).
-    if (feat("timetable") && !hol && ttDays.indexOf(dow) > -1) {
-      // Stunden und Pausenaufsichten in eine gemeinsame, zeitliche Reihenfolge bringen.
+    const school = feat("timetable") && schoolDay(iso);
+    if (school) {
+      // Stunden, Pausenaufsichten und Vertretungen in zeitlicher Reihenfolge.
       const chips = [];
-      for (const l of state.lessons.filter(x => x.day === dow)) {
-        const last = isDouble(l) ? l.slot + 1 : l.slot;
-        chips.push({ sort: hhmm(slotStart(l.slot)), end: slotEnd(last), color: l.color || TT_DEFAULT_COLOR,
-          duty: false,
-          text: `${slotStart(l.slot)} ${l.subject}${l.room ? " · " + l.room : ""}` });
+      for (const l of lessonsOn(iso)) {
+        const ex = exOf(l.id, iso);
+        const memos = memosFor(l, iso).length;
+        const note = noteOf(courseOf(l), iso);
+        let text = `${slotStart(l.slot)} ${lessonLabel(l)}${l.room ? " · " + l.room : ""}`;
+        if (ex) text += ex.type === "ausfall" ? " · fällt aus" : " · Vertretung" + (ex.text ? ": " + ex.text : "");
+        if (note && note.text) text += " 📝";
+        if (memos) text += " 📌" + (memos > 1 ? memos : "");
+        chips.push({ sort: hhmm(slotStart(l.slot)), end: lessonEndTime(l), color: l.color || TT_DEFAULT_COLOR,
+          kind: ex ? "off" : "", text, open: () => openLessonDay(l, iso) });
       }
-      for (const d of state.duties.filter(x => x.day === dow)) {
-        const from = slotEnd(d.brk), to = slotStart(d.brk + 1);
+      for (const du of state.duties.filter(x => x.day === dow)) {
+        const from = slotEnd(du.brk), to = slotStart(du.brk + 1);
         if (!from) continue;
-        chips.push({ sort: hhmm(from) + 0.5, end: to, color: null, duty: true,
-          text: `${from} ${d.text}` });
+        chips.push({ sort: hhmm(from) + 0.5, end: to, kind: "duty", text: `${from} ${du.text}` });
+      }
+      for (const s of state.subLog.filter(x => x.date === iso && !x.lessonId)) {
+        const st = slotStart(s.slot) || "";
+        chips.push({ sort: hhmm(st) + 0.2, end: slotEnd(s.slot + (s.hours === 2 ? 1 : 0)), kind: "sub " + s.type,
+          text: `${st} ${SUB_LABEL[s.type]}${s.klass ? " " + s.klass : ""}${s.subject ? " " + s.subject : ""}`.trim(),
+          open: () => openSubDialog(s, iso) });
       }
       if (chips.length) {
         chips.sort((a,b) => a.sort - b.sort);
         const row = el("div","wd-lessons");
         for (const c of chips) {
-          const chip = el("span","wd-lesson" + (c.duty ? " duty" : "") + (isPast(iso, c.end) ? " past" : ""), c.text);
-          if (!c.duty) chip.style.background = c.color;
+          const chip = el(c.open ? "button" : "span",
+            "wd-lesson" + (c.kind ? " " + c.kind : "") + (isPast(iso, c.end) ? " past" : ""), c.text);
+          if (c.color && !c.kind) chip.style.background = c.color;
+          if (c.open) { chip.type = "button"; chip.onclick = c.open; }
           row.append(chip);
         }
         body.append(row);
       }
     }
-    const tasks = state.tasks.filter(t => t.dueDate === iso && !t.completed)
-      .sort((a,b) => (PRIO_RANK[a.prio] ?? 9) - (PRIO_RANK[b.prio] ?? 9));
+    const tasks = state.tasks.filter(t => t.dueDate === iso && !t.completed).sort(byTimeThenPrio);
     if (tasks.length) tasks.forEach(t => body.append(weekTaskRow(t, false)));
-    else if (!evs.length) body.append(el("p","hint", hol ? "Frei." : "Keine fälligen Aufgaben."));
+    else if (!evs.length && !school) body.append(el("p","hint", hol ? "Frei." : "Keine fälligen Aufgaben."));
+    if (school) {
+      const add = el("button","wd-add","＋ Vertretung");
+      add.type = "button";
+      add.onclick = () => openSubDialog(null, iso);
+      body.append(add);
+    }
     dayEl.append(body);
     box.append(dayEl);
   }
   gCalRefreshVisible(false);
 }
-/* Alle überfälligen offenen Aufgaben gesammelt auf heute ziehen. */
-function bulkOverdueToToday() {
-  const today = todayISO();
+/* Aufgaben eines Tages: zuerst die mit Uhrzeit (nach Zeit), dann nach Priorität. */
+function byTimeThenPrio(a, b) {
+  const ta = validTime(a.dueTime), tb = validTime(b.dueTime);
+  if (ta && tb) return hhmm(a.dueTime) - hhmm(b.dueTime);
+  if (ta !== tb) return ta ? -1 : 1;
+  return (PRIO_RANK[a.prio] ?? 9) - (PRIO_RANK[b.prio] ?? 9);
+}
+/* Kopfzeile „Überfällig“ mit den Aufräum-Knöpfen. */
+function overdueHead() {
+  const head = el("div","grp warn","Überfällig");
+  const b1 = el("button","btn-sm","Alle auf heute");
+  b1.style.marginLeft = "10px";
+  b1.onclick = () => bulkOverdue(0);
+  const b2 = el("button","btn-sm","Alle auf morgen");
+  b2.style.marginLeft = "6px";
+  b2.onclick = () => bulkOverdue(1);
+  head.append(b1, b2);
+  return head;
+}
+/* Alle überfälligen offenen Aufgaben gesammelt auf heute bzw. morgen ziehen —
+   ohne Rückfrage, dafür mit Rückgängig. */
+function bulkOverdue(days) {
+  const today = todayISO(), target = addDaysISO(today, days);
   // Termine mit Uhrzeit (UB-Slots) auslassen — die dürfen nicht als
   // Ganztags-Termine überschrieben werden.
   const over = state.tasks.filter(t => !t.completed && t.dueDate && t.dueDate < today && !t.calTimed);
   if (!over.length) return;
   const snap = snapshot();
-  over.forEach(t => { t.dueDate = today; touch(t); gAutoCal(t); });
+  over.forEach(t => { t.dueDate = target; touch(t); gAutoCal(t); });
   save(); renderTasks(); renderCalendar(); renderWeek();
-  toast(over.length + " Aufgabe(n) auf heute gezogen.", () => restore(snap));
+  toast(over.length + " Aufgabe(n) auf " + (days ? "morgen" : "heute") + " gezogen.", () => restore(snap));
+}
+const bulkOverdueToToday = () => bulkOverdue(0);
+
+/* ---------- Wochenrückblick (sonntags) ---------- */
+function renderReview() {
+  const box = $("wk-review"); if (!box) return;
+  box.replaceChildren();
+  const now = new Date();
+  if (!feat("weekreview") || weekOffset !== 0 || now.getDay() !== 0) return;
+  const mo = addDaysISO(todayISO(), -6);
+  if (state.settings.reviewHidden === mo) return;
+  const from = parseISO(mo); from.setHours(0,0,0,0);
+  const done = state.tasks.filter(t => t.completed && t.doneAt && t.doneAt >= from.getTime()).length;
+  const today = todayISO(), nextSu = addDaysISO(today, 7);
+  const open = state.tasks.filter(t => !t.completed && t.dueDate && t.dueDate <= today).length;
+  const next = state.tasks.filter(t => !t.completed && t.dueDate && t.dueDate > today && t.dueDate <= nextSu);
+  const subs = state.subLog.filter(s => s.date >= mo && s.date <= today);
+  const plus = subs.filter(s => s.type === "plus").reduce((n, s) => n + (s.hours || 1), 0);
+  const minus = subs.filter(s => s.type === "minus").reduce((n, s) => n + (s.hours || 1), 0);
+  const notes = state.lessonNotes.filter(n => n.date >= mo && n.date <= today && n.text).length;
+
+  const card = el("div","review");
+  const top = el("div","rv-top");
+  top.append(el("div","rv-h","Wochenrückblick"));
+  const x = el("button","btn-sm","Ausblenden");
+  x.onclick = () => { state.settings.reviewHidden = mo; save(); renderReview(); };
+  top.append(x);
+  card.append(top);
+  const tiles = el("div","sub-tiles");
+  const tile = (n, lbl) => { const d = el("div","sub-tile"); d.append(el("b",null,String(n)), el("span",null,lbl)); tiles.append(d); };
+  tile(done, "erledigt");
+  tile(open, "noch offen");
+  tile(next.length, "nächste Woche");
+  if (plus || minus) tile((plus - minus > 0 ? "+" : "") + (plus - minus), "Std.-Saldo");
+  card.append(tiles);
+  const lines = [];
+  if (notes) lines.push(`${notes} Stundennotiz${notes > 1 ? "en" : ""} geschrieben.`);
+  if (next.length) {
+    const top3 = [...next].sort((a,b) => a.dueDate.localeCompare(b.dueDate) || byTimeThenPrio(a,b)).slice(0, 4)
+      .map(t => `${shortDate(t.dueDate)} ${t.title}`);
+    lines.push("Als Nächstes: " + top3.join(" · ") + (next.length > 4 ? " …" : ""));
+  }
+  if (open) lines.push("Tipp: Offene Aufgaben mit „Alle auf morgen“ in die neue Woche schieben.");
+  if (lines.length) card.append(el("p","hint", lines.join("\n")));
+  box.append(card);
 }
 
 /* Vergangene Stunden werden durchgestrichen: an zurueckliegenden Tagen
@@ -3306,7 +4179,8 @@ function weekTaskRow(t, withDate) {  const row = el("div","wd-task");
   cb.type = "checkbox"; cb.checked = false;
   cb.setAttribute("aria-label","Erledigt");
   cb.onclick = e => { e.stopPropagation(); toggleTask(t.id); };
-  row.append(cb, el("span",null,t.title));
+  if (validTime(t.dueTime)) row.append(el("span","tm", timeRange(t.dueTime, t.endTime)));
+  row.append(el("span",null,t.title));
   const bits = [];
   if (withDate && t.dueDate) bits.push(deDate(t.dueDate));
   if (t.group) bits.push(t.group);
@@ -3751,32 +4625,56 @@ function gLoadScript() {
 }
 
 /* Token holen. prompt="" versucht es lautlos (bereits erteilte Freigabe),
-   sonst öffnet Google das Zustimmungsfenster. */
+   sonst öffnet Google das Zustimmungsfenster.
+   Fehler beim Öffnen des Google-Fensters (etwa vom Browser blockiert) meldet
+   Google über error_callback, nicht über callback. Ohne diesen Weg und ohne
+   Zeitgrenze bliebe die Anfrage für immer hängen — und mit ihr der Abgleich. */
+let gTokenWait = null, gOnToken = null, gOnTokenErr = null;
 function gRequestToken(promptMode) {
-  return new Promise((resolve, reject) => {
-    gTokenClient.callback = resp => {
-      if (resp.error) return reject(new Error(resp.error));
+  if (gTokenWait) return gTokenWait;          // nie zwei Anfragen gleichzeitig
+  gTokenWait = new Promise((resolve, reject) => {
+    let fertig = false, zu = null;
+    const ende = err => {
+      if (fertig) return;
+      fertig = true; clearTimeout(zu);
+      gOnToken = gOnTokenErr = null;
+      if (err) reject(err); else resolve();
+    };
+    zu = setTimeout(() => ende(new Error("Google antwortet nicht.")),
+                    promptMode === "consent" ? 180000 : 25000);
+    gOnToken = resp => {
+      if (!resp || resp.error) return ende(new Error((resp && resp.error) || "Anmeldung abgelehnt"));
       gToken = resp.access_token;
       gTokenExp = Date.now() + (resp.expires_in || 3600) * 1000;
-      resolve();
+      ende();
+      gTokenSet();
     };
+    gOnTokenErr = err => ende(new Error((err && (err.type || err.message)) || "Google-Fenster nicht geöffnet"));
     try { gTokenClient.requestAccessToken({ prompt: promptMode }); }
-    catch (e) { reject(e); }
+    catch (e) { ende(e); }
+  });
+  const p = gTokenWait;
+  p.then(() => { gTokenWait = null; }, () => { gTokenWait = null; });
+  return p;
+}
+
+/* Den Token-Client anlegen, sobald das Google-Skript da ist. */
+function gInitClient() {
+  if (gTokenClient) return;
+  const cid = gClientId();
+  if (!cid) throw new Error("Keine Client-ID hinterlegt.");
+  gTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: cid, scope: G_SCOPES,
+    hint: gHint() || undefined,
+    callback: resp => { if (gOnToken) gOnToken(resp); },
+    error_callback: err => { if (gOnTokenErr) gOnTokenErr(err); }
   });
 }
 
 async function gEnsureToken(interactive) {
   if (gSignedIn()) return;
   await gLoadScript();
-  if (!gTokenClient) {
-    const cid = gClientId();
-    if (!cid) throw new Error("Keine Client-ID hinterlegt.");
-    gTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: cid, scope: G_SCOPES,
-      hint: gHint() || undefined,
-      callback: () => {}
-    });
-  }
+  gInitClient();
   try { await gRequestToken(""); }
   catch (e) {
     if (interactive) await gRequestToken("consent");
@@ -3784,13 +4682,55 @@ async function gEnsureToken(interactive) {
   }
 }
 
-async function gApi(method, url, body, rawBody, contentType) {
+/* ---- Verbindung dauerhaft halten ----
+   Googles Zugangsschlüssel gilt eine Stunde. Bisher lief der Abgleich danach
+   still nicht mehr, bis die App neu geladen wurde. Jetzt:
+   1. Kurz vor Ablauf lautlos einen neuen Schlüssel holen.
+   2. Blockiert der Browser das ohne Antippen, beim nächsten Tippen in der
+      App nachholen — ein Tippen zählt als Nutzeraktion, dann darf Google sein
+      Fenster öffnen (es schließt sich bei erteilter Freigabe von selbst).
+   3. Was in der Zwischenzeit geändert wurde, bleibt vorgemerkt und geht hoch,
+      sobald der neue Schlüssel da ist. */
+let gRefreshTimer = null, gLastRenew = 0, gLastGestureTry = 0;
+function gTokenSet() {
+  clearTimeout(gRefreshTimer);
+  const wait = Math.max(60000, gTokenExp - Date.now() - 5 * 60000);
+  gRefreshTimer = setTimeout(gRenewSilent, wait);
+  gUpdateUI(); renderAlarms(); renderTasks();
+  if (gPushPending) setTimeout(gPushNow, 0);
+}
+function gWasConnected() { return !!lsGet(GFLAG_KEY) && !!gClientId(); }
+function gRenewSilent() {
+  if (!gWasConnected() || !gTokenClient || gTokenWait) return;
+  gLastRenew = Date.now();
+  gRequestToken("").catch(() => { gUpdateUI(); renderAlarms(); });
+}
+function gGestureRenew(e) {
+  if (gSignedIn() || gTokenWait || !gWasConnected()) return;
+  // Diese Knöpfe verbinden selbst (mit Zustimmungsfenster) — nicht dazwischenfunken.
+  if (e && e.target && e.target.closest && e.target.closest("#btn-g-connect, .alarm .go")) return;
+  // Eigene Sperre für Versuche per Tippen: Ein gerade gescheiterter lautloser
+  // Versuch darf das Tippen nicht blockieren — gerade dann wird es gebraucht.
+  if (Date.now() - gLastGestureTry < 4000) return;
+  if (!(window.google && google.accounts)) { gLoadScript().catch(() => {}); return; }
+  try { gInitClient(); } catch { return; }
+  gLastGestureTry = Date.now();
+  gRequestToken("").then(() => gSyncNow(false), () => { gUpdateUI(); renderAlarms(); });
+}
+document.addEventListener("click", gGestureRenew, true);
+document.addEventListener("keydown", gGestureRenew, true);
+
+async function gApi(method, url, body, rawBody, contentType, retried) {
   await gEnsureToken(false);
   const opts = { method, headers: { Authorization: "Bearer " + gToken } };
   if (rawBody != null) { opts.body = rawBody; if (contentType) opts.headers["Content-Type"] = contentType; }
   else if (body != null) { opts.body = JSON.stringify(body); opts.headers["Content-Type"] = "application/json"; }
   const res = await fetch(url, opts);
-  if (res.status === 401) { gToken = null; await gEnsureToken(false); return gApi(method, url, body, rawBody, contentType); }
+  if (res.status === 401 && !retried) {
+    gToken = null; gTokenExp = 0;
+    await gEnsureToken(false);
+    return gApi(method, url, body, rawBody, contentType, true);
+  }
   if (!res.ok && res.status !== 404 && res.status !== 410) {
     let msg = res.status + "";
     try { const j = await res.json(); msg = (j.error && j.error.message) || msg; } catch {}
@@ -3800,12 +4740,24 @@ async function gApi(method, url, body, rawBody, contentType) {
   return res.json();
 }
 
-/* ---- Drive-App-Ordner: kompletter Datenstand als state.json ---- */
+/* ---- Drive-App-Ordner: kompletter Datenstand als state.json ----
+   Drive zählt bei jeder Änderung der Datei die Versionsnummer hoch. Die App
+   merkt sich die Nummer des zuletzt gesehenen Stands und fragt beim
+   regelmäßigen Abgleich nur diese Nummer ab (winzige Anfrage). Geladen und
+   zusammengeführt wird erst, wenn ein anderes Gerät etwas geändert hat. */
+let gRemoteVersion = null;
 async function gDriveFind() {
   if (gDriveFileId) return gDriveFileId;
   const j = await gApi("GET", "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name)&q=" + encodeURIComponent("name='state.json'"));
-  gDriveFileId = j.files && j.files.length ? j.files[0].id : null;
+  gDriveFileId = j && j.files && j.files.length ? j.files[0].id : null;
   return gDriveFileId;
+}
+async function gDriveMeta() {
+  const id = await gDriveFind();
+  if (!id) return null;
+  const j = await gApi("GET", `https://www.googleapis.com/drive/v3/files/${id}?fields=id,version`);
+  if (!j) { gDriveFileId = null; gRemoteVersion = null; return null; }   // Datei verschwunden
+  return j;
 }
 async function gDrivePull() {
   const id = await gDriveFind();
@@ -3815,87 +4767,136 @@ async function gDrivePull() {
 async function gDrivePush() {
   const json = JSON.stringify(state);
   const id = await gDriveFind();
+  let j;
   if (id) {
-    await gApi("PATCH", `https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, null, json, "application/json");
-  } else {
+    j = await gApi("PATCH", `https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media&fields=id,version`, null, json, "application/json");
+  }
+  if (!id || !j) {
     const boundary = "mtob" + Date.now();
     const body =
       `--${boundary}\r\nContent-Type: application/json\r\n\r\n` +
       JSON.stringify({ name: "state.json", parents: ["appDataFolder"] }) +
       `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${json}\r\n--${boundary}--`;
-    const j = await gApi("POST", "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+    j = await gApi("POST", "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,version",
       null, body, `multipart/related; boundary=${boundary}`);
     gDriveFileId = j.id;
   }
+  gRemoteVersion = j && j.version != null ? String(j.version) : null;
 }
 
-/* Gebündeltes Hochladen nach jeder Änderung. */
-let gPushTimer = null;
+/* Fingerabdruck des Datenbestands, unabhängig von der Reihenfolge der
+   Einträge. Damit lässt sich erkennen, ob ein Hochladen überhaupt nötig ist —
+   ohne dass zwei Geräte sich gegenseitig endlos dieselben Daten zuschieben. */
+function dataSig(s) {
+  const o = { settings: s.settings, tombs: Object.keys(s.tombs || {}).sort().map(k => [k, s.tombs[k]]) };
+  for (const k of LISTS) o[k] = [...(s[k] || [])].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  return JSON.stringify(o);
+}
+
 /* Änderungen werden gebündelt hochgeladen, damit nicht jeder Tastendruck eine
-   Übertragung auslöst. Der Merker sorgt dafür, dass ein noch nicht erledigter
-   Upload beim Verlassen der Seite sofort nachgeholt wird — sonst geht die
-   Änderung verloren, wenn man die App innerhalb der Wartezeit schließt. */
+   Übertragung auslöst. Der Merker sorgt dafür, dass nichts verloren geht:
+   Er bleibt gesetzt, bis ein Abgleich wirklich durch ist — auch wenn die
+   Verbindung gerade abgelaufen ist oder das Netz fehlt. */
+let gPushTimer = null;
 let gPushPending = false;
+let gSyncAgain = false;
 
 function gPushSoon() {
-  if (!gSignedIn() || gApplyingRemote) return;
+  if (gApplyingRemote) return;
   gPushPending = true;
+  if (!gWasConnected()) return;
   clearTimeout(gPushTimer);
   gPushTimer = setTimeout(gPushNow, 2500);
 }
 
 async function gPushNow() {
   clearTimeout(gPushTimer);
-  if (!gSignedIn() || gApplyingRemote || !gPushPending) return;
-  gPushPending = false;
-  try {
-    await gDrivePush();
-    markSynced();
-    renderAlarms();
-    gSetStatus("Zuletzt gesichert: " + new Date().toLocaleTimeString("de-DE"));
-  } catch (e) {
-    gPushPending = true;                 // beim nächsten Anlass erneut versuchen
-    gSetStatus("Sicherung fehlgeschlagen: " + e.message);
-  }
+  if (!gPushPending || !gSignedIn()) return;   // ohne Schlüssel: nach der Erneuerung
+  await gSyncNow(false);
 }
 
-/* Abgleich: Stände beider Seiten auf Eintragsebene zusammenführen. */
+/* Abgleich: erst die Versionsnummer in Drive prüfen. Hat ein anderes Gerät
+   etwas geändert, wird geladen und auf Eintragsebene zusammengeführt;
+   hochgeladen wird nur, wenn der eigene Stand etwas enthält, das in Drive
+   fehlt. So wird vor jedem Hochladen der fremde Stand berücksichtigt und
+   nichts überschrieben, was ein anderes Gerät gerade geschrieben hat. */
 async function gSyncNow(showToast) {
-  if (gBusy) return;
+  if (gBusy) { gSyncAgain = gSyncAgain || (showToast ? "toast" : true); return; }
+  if (!gSignedIn()) {
+    if (!gWasConnected()) return;
+    try { await gEnsureToken(false); }
+    catch {
+      gSetStatus("Verbindung abgelaufen — einmal irgendwo in der App tippen, dann geht es weiter.");
+      gUpdateUI(); renderAlarms();
+      if (showToast) toast("Google-Verbindung erneuern: bitte auf „Jetzt verbinden“ tippen.");
+      return;
+    }
+  }
   gBusy = true;
+  const warAusstehend = gPushPending;
+  gPushPending = false;
+  let push = warAusstehend, fehler = false;
   try {
-    const remote = await gDrivePull();
-    if (remote && (remote.savedAt || 0) !== state.savedAt) {
-      const before = JSON.stringify({ t:state.tasks, l:state.lessons, du:state.duties, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
-      gApplyingRemote = true;
-      state = mergeStates(state, remote);
-      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
-      gApplyingRemote = false;
-      const after = JSON.stringify({ t:state.tasks, l:state.lessons, du:state.duties, s:state.shopping, sl:state.shoppingLists, r:state.referendare, c:state.categories });
-      if (after !== before) {
-        const active = document.activeElement || {};
-        const isTyping = /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName || "");
-        // Formularfelder nicht überschreiben, während der Nutzer tippt
-        // oder ein Dialog offen ist — dann nur die Listen neu zeichnen.
-        const busy = document.querySelector("dialog[open]") || isTyping;
-        if (!busy) { initUI(); renderAll(); }
-        else if (!active.dataset || !active.dataset.notesFor) {
-          // Ausnahme: In offenem Notizfeld gar nicht rerendern, sonst geht
-          // die aktuelle Eingabe verloren, bevor saveDeb() sie schreibt.
-          renderAll();
-        }
-        if (showToast) toast("Änderungen von einem anderen Gerät übernommen.");
-      } else if (showToast) toast("Synchronisiert.");
+    const meta = await gDriveMeta();
+    const neuInDrive = !meta || meta.version == null || String(meta.version) !== gRemoteVersion;
+    if (!meta) push = true;
+    else if (neuInDrive || showToast) {
+      const remoteRaw = await gDrivePull();
+      if (!remoteRaw) push = true;
+      else {
+        const remote = normalizeState(remoteRaw);
+        const before = dataSig(state);
+        gApplyingRemote = true;
+        const merged = mergeStates(state, remote);
+        gApplyingRemote = false;
+        const after = dataSig(merged);
+        gRemoteVersion = meta.version != null ? String(meta.version) : null;
+        // Hochladen nur, wenn Drive nicht schon genau diesen Stand hat.
+        push = after !== dataSig(remote);
+        if (after !== before) {
+          state = merged;
+          try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+          gNachUebernahme();
+          if (showToast) toast("Änderungen von einem anderen Gerät übernommen.");
+        } else if (showToast) toast("Synchronisiert.");
+      }
     } else if (showToast) toast("Synchronisiert.");
-    await gDrivePush();
+    if (push) await gDrivePush();
     markSynced();
     renderAlarms();
-    gSetStatus("Zuletzt synchronisiert: " + new Date().toLocaleTimeString("de-DE"));
+    gSetStatus((push ? "Zuletzt gesichert: " : "Zuletzt abgeglichen: ") + new Date().toLocaleTimeString("de-DE"));
   } catch (e) {
+    fehler = true;
+    gPushPending = gPushPending || warAusstehend || push;   // beim nächsten Anlass erneut
     gSetStatus("Synchronisation fehlgeschlagen: " + e.message);
     if (showToast) toast("Synchronisation fehlgeschlagen.");
     renderAlarms();
-  } finally { gBusy = false; }
+  } finally {
+    gApplyingRemote = false;
+    gBusy = false;
+    // Während des Abgleichs Neues dazugekommen → gleich noch einmal.
+    // Nach einem Fehler (etwa offline) nicht sofort wiederholen — das
+    // übernimmt die nächste Abfrage, das Zurückkehren oder „wieder online“.
+    const nochmal = !fehler && (gSyncAgain || gPushPending);
+    const t = gSyncAgain === "toast";
+    gSyncAgain = false;
+    if (nochmal) setTimeout(() => gSyncNow(t), 300);
+  }
+}
+
+/* Nach übernommenen Fremdänderungen neu zeichnen — aber keine Eingabe
+   abwürgen: Formularfelder nicht überschreiben, während getippt wird oder
+   ein Dialog offen ist; dann nur die Listen neu zeichnen. */
+function gNachUebernahme() {
+  const active = document.activeElement || {};
+  const isTyping = /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName || "");
+  const busy = document.querySelector("dialog[open]") || isTyping;
+  if (!busy) { initUI(); renderAll(); }
+  else if (!active.dataset || !active.dataset.notesFor) {
+    // Ausnahme: In offenem Notizfeld gar nicht rerendern, sonst geht
+    // die aktuelle Eingabe verloren, bevor saveDeb() sie schreibt.
+    renderAll();
+  }
 }
 
 /* ---- Kalender: ganztägige Termine für Aufgaben ---- */
@@ -3918,11 +4919,16 @@ function gTimeZone() {
 const CAL_DUR_MIN = 30;
 
 function gEventBody(t) {
-  const time = /^\d{2}:\d{2}$/.test(state.settings.calEventTime || "")
-    ? state.settings.calEventTime : "08:00";
+  // Eigene Uhrzeit der Aufgabe (von–bis) hat Vorrang vor der Standardzeit.
+  const time = validTime(t.dueTime) ? t.dueTime
+    : /^\d{2}:\d{2}$/.test(state.settings.calEventTime || "") ? state.settings.calEventTime : "08:00";
   const [h, m] = time.split(":").map(Number);
   const start = parseISO(t.dueDate); start.setHours(h, m, 0, 0);
-  const end = new Date(start.getTime() + CAL_DUR_MIN * 60000);
+  let end = new Date(start.getTime() + CAL_DUR_MIN * 60000);
+  if (validEnd(t.dueTime, t.endTime)) {
+    const [eh, em] = t.endTime.split(":").map(Number);
+    end = parseISO(t.dueDate); end.setHours(eh, em, 0, 0);
+  }
   const tz = gTimeZone();
 
   const body = {
@@ -4094,12 +5100,14 @@ async function gCalFetchRange(fromISO, toISO, force) {
         }
         const time = allDay ? null : new Date(ev.start.dateTime)
           .toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+        const endT = (!allDay && ev.end && ev.end.dateTime && endISO === startISO)
+          ? new Date(ev.end.dateTime).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}) : null;
         const d = parseISO(startISO);
         let guard = 0;
         while (isoOf(d) <= endISO && ++guard < 60) {
           const key = isoOf(d);
           (map[key] = map[key] || []).push({
-            id: ev.id, title: ev.summary || "(ohne Titel)", time, allDay,
+            id: ev.id, title: ev.summary || "(ohne Titel)", time, end: endT, allDay,
             loc: ev.location || null, calId: id, color: cal ? cal.color : "#4285f4"
           });
           d.setDate(d.getDate()+1);
@@ -4387,7 +5395,8 @@ $("btn-g-signout").onclick = () => {
   if (gToken && window.google && google.accounts) {
     try { google.accounts.oauth2.revoke(gToken, () => {}); } catch {}
   }
-  gToken = null; gTokenExp = 0; gDriveFileId = null;
+  gToken = null; gTokenExp = 0; gDriveFileId = null; gRemoteVersion = null;
+  clearTimeout(gRefreshTimer); clearInterval(gPollTimer);
   try { localStorage.removeItem(GFLAG_KEY); } catch {}
   renderAlarms();
   gUpdateUI(); gSetStatus("Getrennt. Lokale Daten bleiben erhalten.");
@@ -4402,11 +5411,30 @@ $("tog-autocal").onclick = () => {
   }
 };
 
+/* Alle 30 Sekunden nachsehen, ob ein anderes Gerät etwas geändert hat —
+   nur solange die App sichtbar ist. Das ist eine winzige Abfrage der
+   Versionsnummer; geladen wird nur bei echten Änderungen. */
+const G_POLL_MS = 30000;
 let gPollTimer = null, gLastPull = 0;
 function gStartPolling() {
   clearInterval(gPollTimer);
-  gPollTimer = setInterval(() => { if (gSignedIn() && !document.hidden) gSyncNow(false); }, 5*60*1000);
+  gPollTimer = setInterval(() => {
+    if (document.hidden || !gWasConnected()) return;
+    if (gSignedIn()) { gLastPull = Date.now(); gSyncNow(false); }
+    else if (!gTokenWait && Date.now() - gLastRenew > 10 * 60000) gRenewSilent();
+  }, G_POLL_MS);
 }
+/* Beim Zurückkehren in die App, wenn das Fenster am PC wieder nach vorn
+   kommt oder das Gerät wieder online ist: sofort abgleichen. */
+function gWakeSync() {
+  if (!gWasConnected() || !gAuthChecked) return;
+  if (!gSignedIn()) { if (Date.now() - gLastRenew > 60000) gRenewSilent(); return; }
+  if (Date.now() - gLastPull < 5000) return;
+  gLastPull = Date.now();
+  gSyncNow(false);
+}
+window.addEventListener("focus", gWakeSync);
+window.addEventListener("online", gWakeSync);
 /* Beim Start: war schon einmal verbunden → lautlos anmelden und abgleichen. */
 async function gAutoConnect() {
   let flag = null;
@@ -4756,12 +5784,17 @@ $("btn-ai-task").onclick = async () => {
     const txt = await aiCall(
       `Du zerlegst eine deutsche Alltagseingabe in Aufgabenfelder. Heute ist ${todayISO()} (${parseISO(todayISO()).toLocaleDateString("de-DE",{weekday:"long"})}). ` +
       `Vorhandene Kategorien: ${cats}. Vorhandene Lerngruppen: ${grps}. ` +
-      'Antworte ausschließlich mit JSON: {"titel":"…","datum":"YYYY-MM-DD oder null","prio":"niedrig|mittel|hoch","kategorie":"Name oder null","lerngruppe":"z. B. 9b oder null"}. ' +
-      'Der Titel ist die Aufgabe ohne Datums- und Prioritätsangaben.',
+      'Antworte ausschließlich mit JSON: {"titel":"…","datum":"YYYY-MM-DD oder null","uhrzeit":"HH:MM oder null","ende":"HH:MM oder null","prio":"niedrig|mittel|hoch","kategorie":"Name oder null","lerngruppe":"z. B. 9b oder null"}. ' +
+      'Der Titel ist die Aufgabe ohne Datums-, Zeit- und Prioritätsangaben. "ende" nur, wenn eine Zeitspanne oder Dauer genannt ist.',
+
       raw, 300);
     const j = aiJson(txt);
     if (j.titel) $("t-title").value = j.titel;
     if (j.datum && /^\d{4}-\d{2}-\d{2}$/.test(j.datum)) $("t-date").value = j.datum;
+    if (validTime(j.uhrzeit)) {
+      $("t-time").value = j.uhrzeit;
+      $("t-end").value = validEnd(j.uhrzeit, j.ende) ? j.ende : "";
+    }
     if (j.prio && ["niedrig","mittel","hoch"].includes(j.prio)) $("t-prio").value = j.prio;
     if (j.lerngruppe) $("t-group").value = j.lerngruppe;
     if (j.kategorie) {
@@ -5210,8 +6243,8 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) { gPushNow(); return; }
   checkReminder(); renderTasks(); renderWeek(); renderAlarms();
   checkPendingMail();
-  // Beim Zurückkehren in den Tab neuen Stand von anderen Geräten holen (höchstens alle 60 s).
-  if (gSignedIn() && Date.now() - gLastPull > 60000) { gLastPull = Date.now(); gSyncNow(false); }
+  // Beim Zurückkehren sofort den Stand der anderen Geräte holen.
+  gWakeSync();
 });
 
 // Letzte Gelegenheit vor dem Entladen der Seite.

@@ -48,8 +48,10 @@ Auf jedem Gerät einmal die Client-ID eintragen und verbinden — danach lädt j
 ## Wie die Synchronisation arbeitet
 
 - Der komplette Datenbestand liegt als `state.json` im **App-Datenordner** von Google Drive. Dieser Bereich ist in der normalen Drive-Oberfläche unsichtbar und nur für diese App zugänglich.
-- Nach jeder Änderung wird mit kurzer Verzögerung hochgeladen. Beim Öffnen der App, beim Zurückkehren in den Tab und alle fünf Minuten wird geprüft, ob ein anderes Gerät einen neueren Stand hat — der neuere gewinnt.
-- Deshalb: nicht auf zwei Geräten **gleichzeitig** offline arbeiten und dann beide online bringen; der ältere der beiden Stände würde überschrieben. Im Alltag (ein Gerät nach dem anderen) passiert das nicht.
+- Nach jeder Änderung wird nach etwa 2–3 Sekunden hochgeladen. Beim Öffnen der App, beim Zurückkehren in die App, wenn das Fenster am PC wieder nach vorn kommt, wenn das Gerät wieder online ist und — solange die App sichtbar ist — alle 30 Sekunden wird geprüft, ob ein anderes Gerät etwas geändert hat. Dafür fragt die App nur die Versionsnummer der Datei ab; geladen wird erst bei einer echten Änderung.
+- Zusammengeführt wird pro Eintrag: Von jeder Aufgabe, Stunde, Notiz usw. gewinnt die zuletzt geänderte Fassung, Löschungen werden mit übertragen. Vor jedem Hochladen wird der Stand in Drive berücksichtigt, damit nichts überschrieben wird, was ein anderes Gerät gerade geschrieben hat.
+- Googles Zugangsschlüssel gilt eine Stunde. Die App holt kurz vorher lautlos einen neuen. Blockiert der Browser das, reicht ein Tippen irgendwo in der App. Was in der Zwischenzeit geändert wurde, bleibt vorgemerkt und geht danach hoch.
+- Ist die App ganz geschlossen, kann sie nichts abgleichen (eine Web-App hat ohne eigenen Server keinen Hintergrunddienst). Beim nächsten Öffnen holt sie alles nach.
 - Der JSON-Export unter Einstellungen funktioniert weiterhin und ist als gelegentliche Zweitsicherung sinnvoll.
 
 ## Lokal testen (optional)
