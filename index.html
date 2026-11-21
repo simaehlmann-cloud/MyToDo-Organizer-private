@@ -4179,6 +4179,7 @@ function weekTaskRow(t, withDate) {  const row = el("div","wd-task");
   cb.type = "checkbox"; cb.checked = false;
   cb.setAttribute("aria-label","Erledigt");
   cb.onclick = e => { e.stopPropagation(); toggleTask(t.id); };
+  row.append(cb);
   if (validTime(t.dueTime)) row.append(el("span","tm", timeRange(t.dueTime, t.endTime)));
   row.append(el("span",null,t.title));
   const bits = [];
