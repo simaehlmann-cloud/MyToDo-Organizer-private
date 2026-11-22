@@ -2,7 +2,7 @@
    Strategie: App-Dateien werden zwischengespeichert, damit die App offline
    startet. Alle Anfragen an Google (Anmeldung, Drive, Kalender) gehen immer
    direkt ins Netz und werden nie gecacht. */
-const CACHE = "my-todo-organizer-v39";
+const CACHE = "my-todo-organizer-v40";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -23,8 +23,13 @@ self.addEventListener("fetch", e => {
   if (url.origin !== location.origin) return;
   if (e.request.method !== "GET") return;
   // Netz zuerst, Cache als Rückfallebene — so kommen Updates sofort an.
+  // Die App selbst (Seite, index.html) immer beim Server nachfragen und nicht
+  // den Browser-Zwischenspeicher nehmen: GitHub Pages erlaubt dort bis zu
+  // 10 Minuten alte Fassungen — so blieb nach einem Update kurz die alte Version.
+  const isPage = e.request.mode === "navigate" || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
+  const req = isPage ? new Request(url.href, { cache: "no-cache", credentials: "same-origin" }) : e.request;
   e.respondWith(
-    fetch(e.request)
+    fetch(req)
       .then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
