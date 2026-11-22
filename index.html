@@ -268,6 +268,9 @@ button.wd-lesson:hover{outline:2px solid var(--primary);outline-offset:1px}
 .lh-row .lh-d{font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:3px}
 .lh-row .lh-t{font-size:.88rem;white-space:pre-wrap;word-break:break-word}
 .qa-time input[type=time]{max-width:130px}
+.sy-opt{display:flex;align-items:flex-start;gap:9px;font-size:.88rem;cursor:pointer}
+.sy-opt input{margin-top:1px}
+.sy-opt em{color:var(--muted);font-style:normal}
 .wd-task{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.87rem;cursor:pointer;border-left:3px solid transparent;padding-left:8px}
 .wd-task:hover{background:var(--bg);border-radius:5px}
 .wd-task .pt{color:var(--muted);font-size:.72rem;white-space:nowrap}
@@ -609,8 +612,14 @@ details.folder>div{padding:9px 4px 4px}
     </div>
 
     <div class="card">
+      <h3>Schuljahreswechsel</h3>
+      <p class="hint">Zum neuen Schuljahr oder Halbjahr aufräumen: Stundenplan behalten oder leeren, alte Ausfälle, Aufsichten, Stundennotizen und erledigte Aufgaben entfernen, abgeschlossene Referendare archivieren. Vorher entsteht automatisch eine Sicherungsdatei, danach geht „Rückgängig“. Mehr- und Minderstunden bleiben immer erhalten.</p>
+      <button class="btn-sm" id="btn-sy-open">Schuljahres-Assistent öffnen …</button>
+    </div>
+
+    <div class="card">
       <h3>Ferien &amp; Feiertage (Niedersachsen)</h3>
-      <p class="hint">Vorbelegt mit den offiziellen niedersächsischen Schulferien bis Sommer 2027 (Angaben ohne Gewähr, bei Bedarf anpassen). Gesetzliche Feiertage inkl. Reformationstag berechnet die App selbst. Format: eine Zeile pro Ferienzeit, <code>Name;2026-10-12;2026-10-24</code>.</p>
+      <p class="hint">Vorbelegt mit den niedersächsischen Schulferien bis Sommer 2030 (Quelle siehe Info, Angaben ohne Gewähr, bei Bedarf anpassen). Gesetzliche Feiertage inkl. Reformationstag berechnet die App selbst. Format: eine Zeile pro Ferienzeit, <code>Name;2026-10-12;2026-10-24</code>.</p>
       <textarea id="hol-editor" rows="8" style="font-family:ui-monospace,monospace;font-size:14px"></textarea>
       <div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;align-items:center">
         <button class="btn" id="btn-save-hol">Ferien speichern</button>
@@ -661,6 +670,16 @@ details.folder>div{padding:9px 4px 4px}
         <button class="btn-sm" id="btn-rem-test">Test</button>
       </div>
       <p class="hint" id="rem-status" style="margin:11px 0 0"></p>
+      <div style="margin-top:14px">
+        <label class="fld" for="badge-mode">Zahl am App-Symbol (nur dieses Gerät)</label>
+        <select id="badge-mode" style="width:auto">
+          <option value="today">heute fällig + überfällig</option>
+          <option value="over">nur überfällig</option>
+          <option value="off">aus</option>
+        </select>
+        <p class="hint" id="badge-hint" style="margin:6px 0 0"></p>
+      </div>
+      <p class="hint" style="margin:11px 0 0">Erinnerungszeit, Zahl am App-Symbol und die Anzeige der Google-Termine gelten je Gerät und werden nicht abgeglichen.</p>
     </div>
 
     <div class="card">
@@ -775,6 +794,15 @@ details.folder>div{padding:9px 4px 4px}
         Auswertung. Hinweis für den dienstlichen Gebrauch: Beobachtungsnotizen zu Referendaren
         und Angaben zu Schülerinnen und Schülern möglichst nur mit Kürzeln führen, da der
         Datenbestand bei aktiver Synchronisation in Google Drive liegt.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Quellen</h3>
+      <p class="hint" style="margin:0">
+        Schulferien Niedersachsen ab Herbst 2027 bis Sommer 2030: OpenHolidays API Data
+        (<a href="https://www.openholidaysapi.org" target="_blank" rel="noopener">openholidaysapi.org</a>),
+        Lizenz Open Database License (ODbL) 1.0. Angaben ohne Gewähr. Gesetzliche Feiertage berechnet die App selbst.
       </p>
     </div>
   </section>
@@ -1177,6 +1205,29 @@ details.folder>div{padding:9px 4px 4px}
   </div>
 </dialog>
 
+<dialog id="dlg-sy">
+  <div class="bd">
+    <h3>Neues Schuljahr / Halbjahr</h3>
+    <div style="display:grid;gap:11px">
+      <div><label class="fld" for="sy-date">Stichtag (erster Schultag im neuen Abschnitt)</label><input type="date" id="sy-date"></div>
+      <div><label class="fld" for="sy-tt">Stundenplan</label>
+        <select id="sy-tt"><option value="keep">behalten</option><option value="clear">leeren (neu eintragen)</option></select></div>
+      <label class="sy-opt"><input type="checkbox" id="sy-ex" checked><span>Ausfälle und Vertretungen vor dem Stichtag entfernen <em id="sy-n-ex"></em></span></label>
+      <label class="sy-opt"><input type="checkbox" id="sy-duty" checked><span>Pausenaufsichten entfernen <em id="sy-n-duty"></em></span></label>
+      <label class="sy-opt"><input type="checkbox" id="sy-notes" checked><span>Stundennotizen und Merkzettel vor dem Stichtag löschen <em id="sy-n-notes"></em></span></label>
+      <button class="btn-sm" id="sy-share" style="justify-self:start">Notizen vorher als Text teilen</button>
+      <label class="sy-opt"><input type="checkbox" id="sy-done" checked><span>Erledigte Aufgaben löschen <em id="sy-n-done"></em></span></label>
+      <label class="sy-opt"><input type="checkbox" id="sy-ref" checked><span>Referendare mit Prüfung vor dem Stichtag archivieren (nicht löschen) <em id="sy-n-ref"></em></span></label>
+      <p class="hint" style="margin:0">Mehr- und Minderstunden bleiben erhalten — die Übersicht wertet sie je Schuljahr aus. Vor dem Aufräumen wird eine Sicherungsdatei heruntergeladen; danach lässt sich alles mit „Rückgängig“ zurückholen.</p>
+    </div>
+  </div>
+  <div class="ft">
+    <button class="btn-sm" id="sy-hide">Nicht nötig</button>
+    <button class="btn-sm" id="sy-cancel">Abbrechen</button>
+    <button class="btn" id="sy-run">Aufräumen</button>
+  </div>
+</dialog>
+
 <div id="toast" role="status"></div>
 
 <script>
@@ -1188,7 +1239,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.35";
+const APP_VERSION = "1.36";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -1284,8 +1335,52 @@ const DEFAULT_HOLIDAYS = [
   { n:"Osterferien 2027",       s:"2027-03-22", e:"2027-04-03" },
   { n:"Ferientag Mai",          s:"2027-05-07", e:"2027-05-07" },
   { n:"Ferientag Mai",          s:"2027-05-18", e:"2027-05-18" },
-  { n:"Sommerferien 2027",      s:"2027-07-08", e:"2027-08-18" }
+  { n:"Sommerferien 2027",      s:"2027-07-08", e:"2027-08-18" },
+  /* Ab hier: Schulferien Niedersachsen aus OpenHolidays API Data
+     (openholidaysapi.org, Lizenz ODbL 1.0), Stand 22.11.2026. */
+  { n:"Herbstferien 2027", s:"2027-10-16", e:"2027-10-30" },
+  { n:"Weihnachtsferien 27/28", s:"2027-12-23", e:"2028-01-08" },
+  { n:"Halbjahresferien 2028", s:"2028-01-31", e:"2028-02-01" },
+  { n:"Osterferien 2028", s:"2028-04-10", e:"2028-04-22" },
+  { n:"Tag nach Himmelfahrt", s:"2028-05-26", e:"2028-05-26" },
+  { n:"Pfingstferien", s:"2028-06-06", e:"2028-06-06" },
+  { n:"Sommerferien 2028", s:"2028-07-20", e:"2028-08-30" },
+  { n:"Tag vor dem 3. Oktober", s:"2028-10-02", e:"2028-10-02" },
+  { n:"Herbstferien 2028", s:"2028-10-23", e:"2028-11-04" },
+  { n:"Weihnachtsferien 28/29", s:"2028-12-27", e:"2029-01-06" },
+  { n:"Halbjahresferien 2029", s:"2029-02-01", e:"2029-02-02" },
+  { n:"Osterferien 2029", s:"2029-03-19", e:"2029-04-03" },
+  { n:"Tag vor dem 1. Mai", s:"2029-04-30", e:"2029-04-30" },
+  { n:"Tag nach Himmelfahrt", s:"2029-05-11", e:"2029-05-11" },
+  { n:"Pfingstferien", s:"2029-05-22", e:"2029-05-22" },
+  { n:"Sommerferien 2029", s:"2029-07-19", e:"2029-08-29" },
+  { n:"Tage nach dem 3. Oktober", s:"2029-10-04", e:"2029-10-05" },
+  { n:"Herbstferien 2029", s:"2029-10-22", e:"2029-11-02" },
+  { n:"Weihnachtsferien 29/30", s:"2029-12-21", e:"2030-01-05" },
+  { n:"Halbjahresferien 2030", s:"2030-01-31", e:"2030-02-01" },
+  { n:"Osterferien 2030", s:"2030-04-08", e:"2030-04-23" },
+  { n:"Tag nach Himmelfahrt", s:"2030-05-31", e:"2030-05-31" },
+  { n:"Pfingstferien", s:"2030-06-11", e:"2030-06-11" },
+  { n:"Sommerferien 2030", s:"2030-07-11", e:"2030-08-21" }
 ];
+const FERIEN_STAND = "2030-08-21";   // letzter Ferientag in DEFAULT_HOLIDAYS
+
+/* Bestehende Ferienlisten einmalig um die neuen Jahre ergänzen — nur was
+   nach dem letzten vorhandenen Eintrag beginnt, eigene Einträge bleiben
+   unberührt. Läuft auf jedem Gerät gleich ab und wird deshalb nicht als
+   Änderung gestempelt (sonst überschriebe ein frisch eingerichtetes Gerät
+   beim Abgleich eine von Hand gepflegte Liste). */
+function addFutureHolidays() {
+  const set = state.settings;
+  if (set.ferienStand === FERIEN_STAND) return;
+  const list = Array.isArray(set.holidays) ? set.holidays : [];
+  const maxEnd = list.reduce((m, h) => (h.e && h.e > m ? h.e : m), "");
+  const neu = DEFAULT_HOLIDAYS.filter(h => h.s > maxEnd).map(h => ({ ...h }));
+  set.holidays = list.concat(neu);
+  set.ferienStand = FERIEN_STAND;
+  resetSettingsShadow();       // nicht als eigene Änderung stempeln
+  save();
+}
 
 const DEFAULT_STATE = () => ({
   version: 3,
@@ -1317,7 +1412,11 @@ const DEFAULT_STATE = () => ({
     calendars: {},
     iservs: [ { n:"Schule", u:"" }, { n:"Studienseminar", u:"" } ],
     iservPath: "",
-    reviewHidden: ""         // Montag der Woche, deren Rückblick weggetippt wurde
+    reviewHidden: "",        // Montag der Woche, deren Rückblick weggetippt wurde
+    badge: "today",          // Zahl am App-Symbol: today | over | off (je Gerät)
+    ferienStand: "",         // bis wann die Ferienliste automatisch ergänzt wurde
+    syDone: "",              // Schuljahr, für das der Assistent erledigt ist
+    _ts: {}
   }
 });
 
@@ -1325,6 +1424,119 @@ const DEFAULT_STATE = () => ({
    gehören hier hinein — sonst kämen sie nie auf dem anderen Gerät an. */
 const LISTS = ["tasks","lessons","duties","shopping","shoppingLists","referendare","categories",
                "lessonNotes","lessonMemos","lessonEx","subLog"];
+
+/* ---------- Einstellungen: je Gerät und je Schlüssel ----------
+   Diese Einstellungen gelten nur für das Gerät, auf dem sie gesetzt werden
+   (Anzeige, Erinnerungszeit, Zahl am App-Symbol). Sie stehen in einem eigenen
+   Speicher und gehen nicht nach Drive. */
+const DEVICE_SETTINGS = ["showGcal", "calendars", "reminderTime", "badge"];
+const DEV_KEY = "my-todo-organizer-device";
+function devGet() { try { return JSON.parse(localStorage.getItem(DEV_KEY)) || null; } catch { return null; } }
+function storeDeviceSettings() {
+  const d = {};
+  for (const k of DEVICE_SETTINGS) if (state.settings[k] !== undefined) d[k] = state.settings[k];
+  try { localStorage.setItem(DEV_KEY, JSON.stringify(d)); } catch {}
+}
+function applyDeviceSettings() {
+  const d = devGet();
+  if (!d) { storeDeviceSettings(); return; }     // erster Start: bisherige Werte übernehmen
+  for (const k of DEVICE_SETTINGS) if (d[k] !== undefined) state.settings[k] = d[k];
+}
+/* Was nach Drive geht: ohne die gerätebezogenen Einstellungen. */
+function syncView(s) {
+  const set = { ...s.settings };
+  for (const k of DEVICE_SETTINGS) delete set[k];
+  return { ...s, settings: set, syncFormat: 2 };
+}
+
+/* Alle übrigen Einstellungen werden einzeln abgeglichen: Jeder Schlüssel
+   (bei den Funktionsschaltern jeder Schalter) hat seinen eigenen Zeitstempel
+   in settings._ts. So können PC und Handy verschiedene Einstellungen ändern,
+   ohne sich gegenseitig zu überschreiben. */
+function settingPaths(s) {
+  const out = {};
+  for (const k of Object.keys(s || {})) {
+    if (k === "_ts" || DEVICE_SETTINGS.indexOf(k) > -1) continue;
+    if (k === "features") for (const f of Object.keys(s.features || {})) out["features." + f] = s.features[f];
+    else out[k] = s[k];
+  }
+  return out;
+}
+let settingsShadow = null;     // Stand der Einstellungen beim letzten Speichern/Abgleich
+function shadowOf(s) {
+  const p = settingPaths(s), o = {};
+  for (const k in p) o[k] = JSON.stringify(p[k]);
+  return o;
+}
+function resetSettingsShadow() { settingsShadow = shadowOf(state.settings); }
+/* Beim Speichern: geänderte Einstellungen bekommen einen frischen Stempel. */
+function stampSettings() {
+  const cur = shadowOf(state.settings), now = Date.now();
+  const ts = state.settings._ts = state.settings._ts || {};
+  if (settingsShadow) for (const k in cur) if (cur[k] !== settingsShadow[k]) ts[k] = now;
+  settingsShadow = cur;
+}
+function mergeSettings(a, b, aSaved, bSaved) {
+  const pa = settingPaths(a), pb = settingPaths(b), ta = a._ts || {}, tb = b._ts || {};
+  const out = { features: {} }, ts = {};
+  for (const k of new Set([...Object.keys(pa), ...Object.keys(pb)])) {
+    const xa = ta[k] || 0, xb = tb[k] || 0;
+    let useA;
+    if (!(k in pb)) useA = true;
+    else if (!(k in pa)) useA = false;
+    else if (xa !== xb) useA = xa > xb;
+    // Ohne Stempel (Stand älterer Versionen): wie bisher der jüngere Gesamtstand.
+    else if ((aSaved || 0) !== (bSaved || 0)) useA = (aSaved || 0) > (bSaved || 0);
+    else useA = JSON.stringify(pa[k]) >= JSON.stringify(pb[k]);
+    const v = useA ? pa[k] : pb[k];
+    if (useA ? xa : xb) ts[k] = useA ? xa : xb;
+    if (k.startsWith("features.")) out.features[k.slice(9)] = v; else out[k] = v;
+  }
+  for (const k of DEVICE_SETTINGS) if (k in a) out[k] = a[k];   // eigenes Gerät
+  out._ts = ts;
+  return out;
+}
+
+/* ---------- Lange nicht abgeglichen ----------
+   Löschmarken verfallen nach 90 Tagen. Ein Gerät, das länger nicht
+   abgeglichen hat (iPad über die Sommerferien), würde sonst Gelöschtes
+   zurückbringen. Darum merkt sich jedes Gerät, welche Einträge beim letzten
+   Abgleich in Drive standen. Fehlt so ein Eintrag später in Drive und wurde
+   er hier seitdem nicht geändert, ist er anderswo gelöscht worden. */
+const KNOWN_KEY = "my-todo-organizer-known";
+function knownGet() {
+  try { const k = JSON.parse(localStorage.getItem(KNOWN_KEY)); return k && Array.isArray(k.ids) ? k : null; }
+  catch { return null; }
+}
+/* Merkzettel „stand in Drive“ — immer genau aus dem Stand, der in Drive
+   liegt (hochgeladen oder heruntergeladen), mit dem Zeitpunkt dieses Stands.
+   Was danach hier neu dazukommt, steht nicht drin und kann nie als
+   „anderswo gelöscht“ gelten. */
+function idsOf(s) { const ids = []; for (const k of LISTS) for (const o of (s[k] || [])) ids.push(o.id); return ids; }
+function knownSet(ids, at) {
+  try { localStorage.setItem(KNOWN_KEY, JSON.stringify({ at, ids })); } catch {}
+}
+function dropVanished(local, remote) {
+  const kn = knownGet();
+  if (!kn) return 0;
+  const known = new Set(kn.ids), inRemote = new Set(), tombs = remote.tombs || {};
+  for (const k of LISTS) for (const o of (remote[k] || [])) inRemote.add(o.id);
+  const gone = [];
+  let total = 0;
+  for (const k of LISTS) for (const o of (local[k] || [])) {
+    total++;
+    if (!known.has(o.id) || inRemote.has(o.id) || tombs[o.id]) continue;
+    if ((o.updatedAt || o.createdAt || 0) > kn.at) continue;        // hier seitdem geändert → bleibt
+    gone.push(o.id);
+  }
+  // Notbremse: Fehlt in Drive plötzlich ein großer Teil, ist eher die Datei
+  // kaputt als alles gelöscht — dann lieber nichts entfernen.
+  if (!gone.length || (gone.length > 20 && gone.length > total / 2)) return 0;
+  const g = new Set(gone), now = Date.now();
+  for (const k of LISTS) local[k] = (local[k] || []).filter(o => !g.has(o.id));
+  for (const id of gone) local.tombs[id] = now;
+  return gone.length;
+}
 
 /* Ausfälle verfallen nach 60 Tagen, Merkzettel nach 120. Das Aufräumen
    passiert beim Einlesen auf jedem Gerät gleich — darum braucht es keine
@@ -1399,7 +1611,11 @@ function normalizeState(p) {
         : [ { n:"Schule", u: (typeof set.iservUrl === "string" ? set.iservUrl : "") }, { n:"Studienseminar", u:"" } ],
       iservPath: typeof set.iservPath === "string" ? set.iservPath : "",
       lastExport: typeof set.lastExport === "number" ? set.lastExport : 0,
-      reviewHidden: typeof set.reviewHidden === "string" ? set.reviewHidden : ""
+      reviewHidden: typeof set.reviewHidden === "string" ? set.reviewHidden : "",
+      badge: ["today","over","off"].indexOf(set.badge) > -1 ? set.badge : "today",
+      ferienStand: typeof set.ferienStand === "string" ? set.ferienStand : "",
+      syDone: typeof set.syDone === "string" ? set.syDone : "",
+      _ts: (set._ts && typeof set._ts === "object") ? set._ts : {}
     }
   });
 }
@@ -1418,6 +1634,8 @@ function load() {
 
 function save() {
   state.savedAt = Date.now();
+  stampSettings();
+  storeDeviceSettings();
   try { localStorage.setItem(KEY, JSON.stringify(state)); }
   catch (e) {
     alert(e.name === "QuotaExceededError"
@@ -1428,6 +1646,7 @@ function save() {
   if (typeof scheduleAllSoon === "function") scheduleAllSoon();
   // Geänderten Stand gebündelt nach Google Drive schieben.
   if (typeof gPushSoon === "function") gPushSoon();
+  if (typeof updateBadge === "function") updateBadge();
 }
 
 /* ---------- Hilfen ---------- */
@@ -1451,15 +1670,31 @@ function toast(msg, undoFn) {
   t.replaceChildren();
   t.append(el("span", null, msg));
   if (undoFn) {
+    // Rückgängig gilt nur, solange kein Abgleich Fremdänderungen übernommen
+    // hat — der Schnappschuss stammt von vorher und würde sie sonst überall
+    // wieder rückgängig machen.
+    const ep = undoEpoch;
     const b = el("button","undo","Rückgängig");
-    b.onclick = e => { e.stopPropagation(); hideToast(); undoFn(); };
+    b.onclick = e => {
+      e.stopPropagation(); hideToast();
+      if (ep !== undoEpoch) return toast("Rückgängig ist nicht mehr möglich — inzwischen kamen Änderungen von einem anderen Gerät.");
+      undoFn();
+    };
     t.append(b);
-  }
+    t._undo = true;
+  } else t._undo = false;
   t.onclick = hideToast;
   t.classList.add("show");
   clearTimeout(t._h); clearTimeout(t._hard);
   t._h = setTimeout(hideToast, undoFn ? 6000 : 1500);
   t._hard = setTimeout(hideToast, 6500);   // Notbremse
+}
+let undoEpoch = 0;
+/* Nach übernommenen Fremdänderungen: offenes „Rückgängig“ verfällt. */
+function expireUndo() {
+  undoEpoch++;
+  const t = $("toast");
+  if (t && t._undo && t.classList.contains("show")) hideToast();
 }
 function hideToast() {
   const t = $("toast");
@@ -1475,16 +1710,33 @@ document.addEventListener("close", e => {
 }, true);
 
 /* Vollständige Kopie des Datenstands für Rückgängig-Aktionen. */
+/* Das aktuelle Objekt zu einem Eintrag (nach einem Abgleich kann es ein
+   anderes sein als das, das eine Funktion vorher in der Hand hatte). */
+function liveOf(list, o) { return (state[list] || []).find(x => x.id === o.id) || o; }
 function snapshot() { return JSON.parse(JSON.stringify(state)); }
+/* Rückgängig: nur das zurückdrehen, was sich seit dem Schnappschuss
+   tatsächlich geändert hat. Diese Einträge bekommen einen frischen Stempel
+   (und verlieren ihre Löschmarke), damit der Abgleich sie nicht wieder
+   überschreibt. Alles andere bleibt unangetastet — auch Einträge, die ein
+   anderes Gerät inzwischen geändert hat. Was seit dem Schnappschuss neu
+   dazukam, wird regulär gelöscht. */
 function restore(snap) {
-  state = snap;
-  // Wiederhergestellte Einträge frisch stempeln und ihre Löschmarken tilgen,
-  // damit der Geräteabgleich das Rückgängig nicht wieder rückgängig macht.
   const now = Date.now();
   state.tombs = state.tombs || {};
   for (const k of LISTS) {
-    for (const o of (state[k] || [])) { o.updatedAt = now; delete state.tombs[o.id]; }
+    const cur = state[k] || [], old = snap[k] || [];
+    const curM = new Map(cur.map(o => [o.id, o])), oldIds = new Set(old.map(o => o.id));
+    const out = [];
+    for (const o of old) {
+      const c = curM.get(o.id);
+      if (c && JSON.stringify(c) === JSON.stringify(o)) out.push(c);
+      else { o.updatedAt = now; delete state.tombs[o.id]; out.push(o); }
+    }
+    for (const c of cur) if (!oldIds.has(c.id)) markDeleted(c.id);
+    state[k] = out;
   }
+  state.settings = snap.settings;      // save() erkennt geänderte Einstellungen einzeln
+  applyDeviceSettings();
   save(); initUI(); renderAll(); toast("Wiederhergestellt.");
 }
 
@@ -1527,9 +1779,7 @@ function mergeStates(a, b) {
      andere Gerät kurz zuvor geändert hat, ginge beim nächsten Abgleich verloren. */
   const merged = {
     version: 3, savedAt: Math.max(a.savedAt || 0, b.savedAt || 0),
-    settings: (a.savedAt || 0) > (b.savedAt || 0) ? a.settings
-            : (b.savedAt || 0) > (a.savedAt || 0) ? b.settings
-            : (JSON.stringify(a.settings) >= JSON.stringify(b.settings) ? a.settings : b.settings)
+    settings: mergeSettings(a.settings || {}, b.settings || {}, a.savedAt, b.savedAt)
   };
   for (const k of LISTS) merged[k] = mergeList(a[k], b[k]);
   // Erst nach dem Filtern aufräumen — sonst können sehr alte Löschmarken
@@ -2267,6 +2517,11 @@ $("btn-rem-test").onclick = async () => {
   }
 };
 
+$("badge-mode").onchange = e => {
+  state.settings.badge = e.target.value;
+  save(); updateBadge();
+  toast(e.target.value === "off" ? "Zahl am App-Symbol ausgeschaltet." : "Zahl am App-Symbol eingestellt.");
+};
 $("rem-time").onchange = async e => {
   state.settings.reminderTime = e.target.value || "08:00";
   save(); await scheduleAll(); toast("Erinnerungszeit gespeichert.");
@@ -3172,13 +3427,18 @@ $("l-color").oninput = () => renderSwatches($("l-color").value);
 $("l-save").onclick = () => {
   const subject = $("l-subject").value.trim();
   if (!subject) return toast("Bitte ein Fach eingeben.");
-  const lesson = editingLesson.lesson, day = editingLesson.day, slot = editingLesson.slot;
+  /* Den Eintrag frisch über die Kennung holen: Ein Abgleich während des
+     Bearbeitens baut den Datenbestand neu auf, das beim Öffnen gemerkte
+     Objekt gehört dann nicht mehr dazu — Änderungen daran gingen verloren. */
+  const day = editingLesson.day, slot = editingLesson.slot;
+  const lesson = editingLesson.lesson ? state.lessons.find(x => x.id === editingLesson.lesson.id) : null;
+  if (editingLesson.lesson && !lesson) { $("dlg-lesson").close(); return toast("Diese Stunde wurde inzwischen auf einem anderen Gerät gelöscht."); }
   const room = $("l-room").value.trim() || null, color = $("l-color").value;
   const klass = $("l-klass").value.trim() || null;
   const span = ($("l-dbl").checked && canDouble(slot)) ? 2 : 1;
   // Wird zur Doppelstunde erweitert, muss die Folgestunde weichen.
   if (span === 2) {
-    const next = state.lessons.find(x => x.day === day && x.slot === slot + 1 && x !== lesson);
+    const next = state.lessons.find(x => x.day === day && x.slot === slot + 1 && (!lesson || x.id !== lesson.id));
     if (next && !confirm(`„${next.subject}“ in der ${slot+2}. Stunde wird durch die Doppelstunde ersetzt. Fortfahren?`)) return;
     if (next) { markDeleted(next.id); state.lessons = state.lessons.filter(x => x.id !== next.id); }
   }
@@ -3192,7 +3452,7 @@ $("l-save").onclick = () => {
 };
 $("l-cancel").onclick = () => $("dlg-lesson").close();
 $("l-del").onclick = () => {
-  const lesson = editingLesson.lesson;
+  const lesson = editingLesson.lesson && state.lessons.find(x => x.id === editingLesson.lesson.id);
   if (!lesson) { $("dlg-lesson").close(); return; }
   markDeleted(lesson.id);
   state.lessons = state.lessons.filter(x => x.id !== lesson.id);
@@ -3233,14 +3493,16 @@ $("d-cancel").onclick = () => $("dlg-duty").close();
 $("d-save").onclick = () => {
   const text = $("d-text").value.trim();
   if (!text) return toast("Bitte einen Text eingeben.");
-  const { duty, day, brk } = editingDuty;
+  const { day, brk } = editingDuty;
+  const duty = editingDuty.duty ? state.duties.find(x => x.id === editingDuty.duty.id) : null;
+  if (editingDuty.duty && !duty) { $("dlg-duty").close(); return toast("Diese Aufsicht wurde inzwischen auf einem anderen Gerät gelöscht."); }
   if (duty) { Object.assign(duty, { text }); touch(duty); }
   else state.duties.push({ id: uid(), day, brk, text, createdAt: Date.now() });
   save(); $("dlg-duty").close(); renderTimetable(); renderWeek(); updateStorageInfo();
   toast("Aufsicht gespeichert.");
 };
 $("d-del").onclick = () => {
-  const duty = editingDuty.duty;
+  const duty = editingDuty.duty && state.duties.find(x => x.id === editingDuty.duty.id);
   if (!duty) { $("dlg-duty").close(); return; }
   markDeleted(duty.id);
   state.duties = state.duties.filter(x => x.id !== duty.id);
@@ -3426,7 +3688,7 @@ function openHistory(key) {
 $("lh-close").onclick = () => $("dlg-lhist").close();
 $("lh-share").onclick = () => shareText(historyText(lhKey), "Verlauf " + courseLabel(lhKey));
 $("l-hist").onclick = () => {
-  const l = editingLesson && editingLesson.lesson;
+  const l = editingLesson && editingLesson.lesson && state.lessons.find(x => x.id === editingLesson.lesson.id);
   if (!l) return toast("Erst die Stunde speichern.");
   $("dlg-lesson").close(); openHistory(courseOf(l));
 };
@@ -3470,7 +3732,9 @@ $("sb-save").onclick = () => {
   const v = { date, type: $("sb-type").value, slot: +$("sb-slot").value || 0, hours: +$("sb-hours").value === 2 ? 2 : 1,
     klass: $("sb-klass").value.trim() || null, subject: $("sb-subject").value.trim() || null,
     note: $("sb-note").value.trim() || null };
-  if (sbCur) { Object.assign(sbCur, v); touch(sbCur); }
+  const cur = sbCur && state.subLog.find(x => x.id === sbCur.id);
+  if (sbCur && !cur) { $("dlg-sub").close(); return toast("Dieser Eintrag wurde inzwischen auf einem anderen Gerät gelöscht."); }
+  if (cur) { Object.assign(cur, v); touch(cur); }
   else state.subLog.push({ id: uid(), ...v, createdAt: Date.now() });
   save(); $("dlg-sub").close();
   renderWeek(); renderSubOverview();
@@ -3566,6 +3830,109 @@ function renderCountCard() {
   }
   if (!any) box.append(el("p","empty","Keine anstehenden Klassenarbeiten oder Ferien gefunden."));
 }
+
+/* ================================================================
+   Schuljahres-Assistent
+   Nach den Sommerferien erscheint oben in der Woche ein Hinweis; der
+   Assistent lässt sich jederzeit auch über die Einstellungen öffnen
+   (etwa zum Halbjahr). Vorher Sicherungsdatei, danach Rückgängig.
+   ================================================================ */
+const syLabel = iso => { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); const a = m >= 8 ? y : y - 1; return `${a}/${String(a + 1).slice(2)}`; };
+/* Ende der zuletzt vergangenen Sommerferien (oder null). */
+function lastSummerEnd() {
+  const today = todayISO();
+  return (state.settings.holidays || []).filter(h => /sommer/i.test(h.n || "") && h.e && h.e < today)
+    .map(h => h.e).sort().pop() || null;
+}
+/* Banner: bis sechs Wochen nach den Sommerferien, solange nicht erledigt. */
+function schoolYearDue() {
+  const end = lastSummerEnd();
+  if (!end) return null;
+  const start = addDaysISO(end, 1);
+  if (daysUntil(start) < -42) return null;
+  if (state.settings.syDone === syLabel(start)) return null;
+  const was = state.lessons.length + state.duties.length + state.lessonNotes.length
+    + state.tasks.filter(t => t.completed).length;
+  return was ? start : null;
+}
+function syCounts(day) {
+  return {
+    ex: state.lessonEx.filter(x => x.date < day).length,
+    duty: state.duties.length,
+    notes: state.lessonNotes.filter(n => n.date < day).length + state.lessonMemos.filter(m => m.after < day).length,
+    done: state.tasks.filter(t => t.completed).length,
+    ref: state.referendare.filter(r => !r.archived && r.exam && r.exam < day).length
+  };
+}
+function syRefresh() {
+  const day = $("sy-date").value || todayISO(), c = syCounts(day);
+  for (const k of ["ex","duty","notes","done","ref"]) $("sy-n-" + k).textContent = `(${c[k]})`;
+  if ($("sy-tt").value === "clear") $("sy-n-ex").textContent = `(alle, Stundenplan wird geleert)`;
+}
+function openSchoolYear(start) {
+  $("sy-date").value = start || schoolYearDue() || todayISO();
+  $("sy-tt").value = "keep";
+  for (const k of ["ex","duty","notes","done","ref"]) $("sy-" + k).checked = true;
+  syRefresh();
+  $("dlg-sy").showModal();
+}
+$("sy-date").onchange = syRefresh;
+$("sy-tt").onchange = syRefresh;
+$("btn-sy-open").onclick = () => openSchoolYear(null);
+$("sy-cancel").onclick = () => $("dlg-sy").close();
+$("sy-hide").onclick = () => {
+  state.settings.syDone = syLabel($("sy-date").value || todayISO());
+  save(); $("dlg-sy").close(); renderAlarms();
+  toast("Hinweis für dieses Schuljahr ausgeblendet.");
+};
+$("sy-share").onclick = () => {
+  const day = $("sy-date").value || todayISO();
+  const keys = [...new Set(state.lessonNotes.filter(n => n.date < day && n.text).map(n => n.course))]
+    .sort((a, b) => courseLabel(a).localeCompare(courseLabel(b), "de"));
+  if (!keys.length) return toast("Keine Stundennotizen vor dem Stichtag.");
+  const text = keys.map(k => historyText(k)).join("\n\n————————\n\n");
+  shareText(text, "Stundennotizen bis " + deDate(day));
+};
+$("sy-run").onclick = async () => {
+  const day = $("sy-date").value;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return toast("Bitte einen Stichtag wählen.");
+  const clearTT = $("sy-tt").value === "clear";
+  const o = k => $("sy-" + k).checked;
+  // 1) Sicherungsdatei (ohne API-Schlüssel)
+  const ok = await download(`my-todo-organizer-vor-schuljahr-${todayISO()}.json`,
+    JSON.stringify(state, null, 2), "application/json");
+  if (ok === false && !confirm("Die Sicherungsdatei konnte nicht gespeichert werden. Trotzdem aufräumen? (Rückgängig geht weiterhin.)")) return;
+  // 2) Aufräumen — alles über Löschmarken, damit es auf allen Geräten ankommt
+  const snap = snapshot();
+  const drop = (list, pred) => {
+    const weg = state[list].filter(pred);
+    weg.forEach(x => markDeleted(x.id));
+    state[list] = state[list].filter(x => !pred(x));
+    return weg.length;
+  };
+  const n = {};
+  if (clearTT) { n.tt = drop("lessons", () => true); n.ex = drop("lessonEx", () => true); }
+  else if (o("ex")) n.ex = drop("lessonEx", x => x.date < day);
+  if (o("duty")) n.duty = drop("duties", () => true);
+  if (o("notes")) n.notes = drop("lessonNotes", x => x.date < day) + drop("lessonMemos", x => x.after < day);
+  if (o("done")) n.done = drop("tasks", t => t.completed);
+  if (o("ref")) {
+    n.ref = 0;
+    for (const r of state.referendare) if (!r.archived && r.exam && r.exam < day) { r.archived = true; touch(r); n.ref++; }
+  }
+  state.settings.syDone = syLabel(day);
+  if (ok !== false) state.settings.lastExport = Date.now();
+  save(); $("dlg-sy").close();
+  initUI(); renderAll();
+  const teile = [];
+  if (n.tt) teile.push(n.tt + " Stunden");
+  if (n.ex) teile.push(n.ex + " Ausfälle");
+  if (n.duty) teile.push(n.duty + " Aufsichten");
+  if (n.notes) teile.push(n.notes + " Notizen/Merkzettel");
+  if (n.done) teile.push(n.done + " erledigte Aufgaben");
+  if (n.ref) teile.push(n.ref + " Referendare archiviert");
+  toast("Aufgeräumt" + (teile.length ? ": " + teile.join(", ") : " — es gab nichts zu entfernen") + ".", () => restore(snap));
+};
 
 /* ---------- Einkaufsliste ---------- */
 function addItem() {
@@ -3884,11 +4251,15 @@ $("wk-print").onclick = () => window.print();
    Funktioniert auf iOS/iPadOS 16.4+ und Chrome-Desktop; Android/Chrome
    unterstützt die API bis heute nicht — dort ignoriert der Browser den
    Aufruf einfach. */
+/* Zahl am App-Symbol (Badging API). Klappt bei installierten Web-Apps am
+   PC und auf dem iPad; Chrome auf Android zeigt bei Web-Apps keine Zahl —
+   dort passiert einfach nichts. */
 function updateBadge() {
   const nav = navigator;
   if (!nav.setAppBadge && !nav.clearAppBadge) return;
-  const today = todayISO();
-  const n = state.tasks.filter(t => !t.completed && t.dueDate && t.dueDate <= today).length;
+  const today = todayISO(), mode = state.settings.badge || "today";
+  const n = mode === "off" ? 0 : state.tasks.filter(t => !t.completed && t.dueDate
+    && (mode === "over" ? t.dueDate < today : t.dueDate <= today)).length;
   try {
     if (n > 0 && nav.setAppBadge) nav.setAppBadge(n);
     else if (nav.clearAppBadge) nav.clearAppBadge();
@@ -3970,6 +4341,17 @@ function renderAlarms() {
       "Jetzt abgleichen",
       () => gSyncNow(true),
       "sync"));
+  }
+
+  // Nach den Sommerferien: Schuljahres-Assistent anbieten.
+  const syStart = schoolYearDue();
+  if (syStart && !alarmMuted("schoolyear")) {
+    box.append(alarmBox("amber", "🎒",
+      "Neues Schuljahr " + syLabel(syStart),
+      "Alten Stundenplan, Aufsichten, Stundennotizen und erledigte Aufgaben aufräumen? Vorher wird automatisch gesichert.",
+      "Assistent öffnen",
+      () => openSchoolYear(syStart),
+      "schoolyear"));
   }
 
   // 3) Lange keine JSON-Sicherung exportiert — zweite Ebene neben Drive.
@@ -4276,10 +4658,19 @@ $("r-save").onclick = async () => {
     note: $("r-note").value.trim()
   };
   let r;
-  if (editingRefId) { r = state.referendare.find(x => x.id === editingRefId); Object.assign(r, data); touch(r); }
+  if (editingRefId) {
+    r = state.referendare.find(x => x.id === editingRefId);
+    if (!r) { $("dlg-ref").close(); return toast("Diese Person wurde inzwischen auf einem anderen Gerät gelöscht."); }
+    Object.assign(r, data); touch(r);
+  }
   else { r = { id: uid(), createdAt: Date.now(), ubs: {}, ...data }; state.referendare.push(r); }
   await syncSpecialDate(r, "exam", "Prüfung", r.exam, r.examTime);
   await syncSpecialDate(r, "guea", "GüA",    r.guea, r.gueaTime);
+  // Kam während der Kalender-Übertragung ein Abgleich dazwischen, steckt im
+  // Bestand ein anderes Objekt — dann unseres (mit den Eingaben) einsetzen.
+  const ri = state.referendare.findIndex(x => x.id === r.id);
+  if (ri > -1 && state.referendare[ri] !== r) { touch(r); state.referendare[ri] = r; }
+  else if (ri < 0) state.referendare.push(r);
   syncGutachten(r);
   save(); $("dlg-ref").close(); renderRefs(); renderTasks(); renderWeek();
   toast("Gespeichert.");
@@ -4471,6 +4862,10 @@ $("ubs-save").onclick = async () => {
       else { const ev = await gApi("POST", "https://www.googleapis.com/calendar/v3/calendars/primary/events", body); slot.eventId = ev.id; }
     } catch (e) { toast("Kalender: " + e.message); }
   }
+  // Ein Abgleich während der Kalender-Anfrage kann ein anderes Objekt
+  // eingesetzt haben — unseres mit den Eingaben gilt.
+  const ri = state.referendare.findIndex(x => x.id === r.id);
+  if (ri > -1 && state.referendare[ri] !== r) { touch(r); state.referendare[ri] = r; }
   const prepDate = (() => { const d = parseISO(date); d.setDate(d.getDate() - 1); return toSchoolDayBack(isoOf(d)); })();
   upsertPrepTask(r, "ub_" + editingUb.key, `${slotDef.prep} — ${r.name}`, prepDate);
   save(); $("dlg-ubs").close(); renderRefs(); renderTasks(); renderWeek();
@@ -4769,8 +5164,10 @@ async function gDrivePull() {
   if (!id) return null;
   return gApi("GET", `https://www.googleapis.com/drive/v3/files/${id}?alt=media`);
 }
+let gPushedIds = null, gPushedAt = 0;
 async function gDrivePush() {
-  const json = JSON.stringify(state);
+  const json = JSON.stringify(syncView(state));
+  const ids = idsOf(state), at = Date.now();
   const id = await gDriveFind();
   let j;
   if (id) {
@@ -4787,13 +5184,18 @@ async function gDrivePush() {
     gDriveFileId = j.id;
   }
   gRemoteVersion = j && j.version != null ? String(j.version) : null;
+  gPushedIds = ids; gPushedAt = at;
 }
 
 /* Fingerabdruck des Datenbestands, unabhängig von der Reihenfolge der
    Einträge. Damit lässt sich erkennen, ob ein Hochladen überhaupt nötig ist —
    ohne dass zwei Geräte sich gegenseitig endlos dieselben Daten zuschieben. */
 function dataSig(s) {
-  const o = { settings: s.settings, tombs: Object.keys(s.tombs || {}).sort().map(k => [k, s.tombs[k]]) };
+  // Einstellungen mit sortierten Schlüsseln: Die Reihenfolge im Objekt kann
+  // je Gerät verschieden sein und darf keinen Unterschied vortäuschen.
+  const canon = v => Array.isArray(v) ? v.map(canon)
+    : v && typeof v === "object" ? Object.keys(v).sort().reduce((o, k) => (o[k] = canon(v[k]), o), {}) : v;
+  const o = { settings: canon(syncView(s).settings), tombs: Object.keys(s.tombs || {}).sort().map(k => [k, s.tombs[k]]) };
   for (const k of LISTS) o[k] = [...(s[k] || [])].sort((a, b) => String(a.id).localeCompare(String(b.id)));
   return JSON.stringify(o);
 }
@@ -4840,7 +5242,7 @@ async function gSyncNow(showToast) {
   gBusy = true;
   const warAusstehend = gPushPending;
   gPushPending = false;
-  let push = warAusstehend, fehler = false;
+  let push = warAusstehend, fehler = false, known = null;
   try {
     const meta = await gDriveMeta();
     const neuInDrive = !meta || meta.version == null || String(meta.version) !== gRemoteVersion;
@@ -4851,22 +5253,32 @@ async function gSyncNow(showToast) {
       else {
         const remote = normalizeState(remoteRaw);
         const before = dataSig(state);
+        // Nur einem Stand aus v1.36+ trauen: Ältere Versionen konnten ohne
+        // Zusammenführen hochladen, dort fehlende Einträge heißen nichts.
+        const weg = remoteRaw.syncFormat === 2 ? dropVanished(state, remote) : 0;
         gApplyingRemote = true;
         const merged = mergeStates(state, remote);
         gApplyingRemote = false;
         const after = dataSig(merged);
         gRemoteVersion = meta.version != null ? String(meta.version) : null;
+        known = { ids: idsOf(remote), at: Date.now() };
         // Hochladen nur, wenn Drive nicht schon genau diesen Stand hat.
         push = after !== dataSig(remote);
-        if (after !== before) {
+        if (after !== before || weg) {
           state = merged;
+          applyDeviceSettings();
+          resetSettingsShadow();
+          // Erst den zusammengeführten Stand sichern, dann (am Ende) den
+          // Merkzettel fortschreiben — so führt ein Abbruch nie zu falschen
+          // Löschungen.
           try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
           gNachUebernahme();
           if (showToast) toast("Änderungen von einem anderen Gerät übernommen.");
         } else if (showToast) toast("Synchronisiert.");
       }
     } else if (showToast) toast("Synchronisiert.");
-    if (push) await gDrivePush();
+    if (push) { await gDrivePush(); known = { ids: gPushedIds, at: gPushedAt }; }
+    if (known) knownSet(known.ids, known.at);
     markSynced();
     renderAlarms();
     gSetStatus((push ? "Zuletzt gesichert: " : "Zuletzt abgeglichen: ") + new Date().toLocaleTimeString("de-DE"));
@@ -4896,6 +5308,7 @@ function gNachUebernahme() {
   const active = document.activeElement || {};
   const isTyping = /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName || "");
   const busy = document.querySelector("dialog[open]") || isTyping;
+  expireUndo();
   if (!busy) { initUI(); renderAll(); }
   else if (!active.dataset || !active.dataset.notesFor) {
     // Ausnahme: In offenem Notizfeld gar nicht rerendern, sonst geht
@@ -4964,12 +5377,16 @@ async function gSyncTask(t, showToast) {
       // statt dauerhaft gegen eine tote Kennung zu schreiben.
       if (!upd) {
         const ev = await gApi("POST", "https://www.googleapis.com/calendar/v3/calendars/primary/events", gEventBody(t));
-        t.gcalEventId = ev.id; touch(t);
+        const cur = liveOf("tasks", t); cur.gcalEventId = ev.id; touch(cur);
       }
     } else {
       const ev = await gApi("POST", "https://www.googleapis.com/calendar/v3/calendars/primary/events", gEventBody(t));
-      t.gcalEventId = ev.id;
-      touch(t);
+      // Während der Anfrage kann ein Abgleich den Bestand neu aufgebaut haben —
+      // die Termin-Kennung gehört an die aktuelle Aufgabe, sonst entstünde
+      // beim nächsten Mal ein doppelter Termin.
+      const cur = liveOf("tasks", t);
+      cur.gcalEventId = ev.id;
+      touch(cur);
     }
     save(); renderTasks();
     if (showToast) toast("Im Google Kalender eingetragen.");
@@ -4990,7 +5407,8 @@ async function gSetTaskEvent(t, gewuenscht) {
     await gSyncTask(t, false);
   } else if (t.gcalEventId) {
     await gDeleteEvent(t.gcalEventId);
-    t.gcalEventId = null; touch(t); save(); renderTasks();
+    const cur = liveOf("tasks", t);
+    cur.gcalEventId = null; touch(cur); save(); renderTasks();
   }
   } catch (e) { toast("Kalender fehlgeschlagen: " + ((e && e.message) || e)); }
 }
@@ -5402,7 +5820,7 @@ $("btn-g-signout").onclick = () => {
   }
   gToken = null; gTokenExp = 0; gDriveFileId = null; gRemoteVersion = null;
   clearTimeout(gRefreshTimer); clearInterval(gPollTimer);
-  try { localStorage.removeItem(GFLAG_KEY); } catch {}
+  try { localStorage.removeItem(GFLAG_KEY); localStorage.removeItem(KNOWN_KEY); } catch {}
   renderAlarms();
   gUpdateUI(); gSetStatus("Getrennt. Lokale Daten bleiben erhalten.");
 };
@@ -6070,6 +6488,10 @@ function initUI() {
   $("slot-editor").value = state.settings.slots.join("\n");
   $("tt-days").value = state.settings.weekDays || "mofr";
   $("rem-time").value = state.settings.reminderTime || "08:00";
+  $("badge-mode").value = state.settings.badge || "today";
+  $("badge-hint").textContent = navigator.setAppBadge
+    ? "Erscheint, wenn MyToDo als App installiert ist (am PC über Chrome/Edge, auf dem iPad über den Home-Bildschirm mit erlaubten Mitteilungen). Chrome auf Android-Handys zeigt bei Web-Apps keine Zahl an."
+    : "Dieser Browser unterstützt keine Zahl am App-Symbol.";
   $("hol-editor").value = (state.settings.holidays || []).map(h => `${h.n};${h.s};${h.e}`).join("\n");
   $("hol-skip").checked = state.settings.skipHolidays !== false;
   $("ai-key").value = aiKey();
@@ -6104,6 +6526,8 @@ function schritt(name, fn) {
   }
 }
 schritt("load", load);
+schritt("geraet", () => { applyDeviceSettings(); resetSettingsShadow(); });
+schritt("ferien", addFutureHolidays);
 schritt("farben", migrateTtColors);
 schritt("calcache", gCalLoadCache);
 calSelected = todayISO();
@@ -6241,12 +6665,12 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 
 // Erinnerungen prüfen: beim Start, alle 5 Minuten und beim Zurückkehren in den Tab.
 checkReminder();
-setInterval(() => { checkReminder(); renderWeek(); }, 5 * 60 * 1000);
+setInterval(() => { checkReminder(); renderWeek(); updateBadge(); }, 5 * 60 * 1000);
 document.addEventListener("visibilitychange", () => {
   // Beim Weggehen ausstehende Änderungen sofort hochladen, statt auf den
   // Sammel-Countdown zu warten — der überlebt das Schließen nicht.
-  if (document.hidden) { gPushNow(); return; }
-  checkReminder(); renderTasks(); renderWeek(); renderAlarms();
+  if (document.hidden) { updateBadge(); gPushNow(); return; }
+  checkReminder(); renderTasks(); renderWeek(); renderAlarms(); updateBadge();
   checkPendingMail();
   // Beim Zurückkehren sofort den Stand der anderen Geräte holen.
   gWakeSync();
