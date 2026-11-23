@@ -268,6 +268,7 @@ button.wd-lesson:hover{outline:2px solid var(--primary);outline-offset:1px}
 .lh-row .lh-d{font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:3px}
 .lh-row .lh-t{font-size:.88rem;white-space:pre-wrap;word-break:break-word}
 .qa-time input[type=time]{max-width:130px}
+.g-quiet{font-size:.8rem;color:var(--muted);margin:0 0 10px;padding-left:2px}
 .sy-opt{display:flex;align-items:flex-start;gap:9px;font-size:.88rem;cursor:pointer}
 .sy-opt input{margin-top:1px}
 .sy-opt em{color:var(--muted);font-style:normal}
@@ -1239,7 +1240,7 @@ details.folder>div{padding:9px 4px 4px}
    Kein eigener Server. OAuth über Google Identity Services (Token-Flow).
    ================================================================ */
 
-const APP_VERSION = "1.36";
+const APP_VERSION = "1.37";
 const KEY = "my-todo-organizer-v1";
 const CLIENT_KEY = "my-todo-organizer-clientid";
 /* Beim Einfuegen auf dem Handy geraten unsichtbare Zeichen in die Client-ID
@@ -4322,7 +4323,18 @@ function renderAlarms() {
 
   // 1) Google war einmal verbunden, die Anmeldung ist aber erloschen.
   const warVerbunden = !!lsGet(GFLAG_KEY) && !!gClientId();
-  if (gAuthChecked && warVerbunden && !gSignedIn() && !gTokenWait && !alarmMuted("auth")) {
+  /* Beim Start (und nach einer Stunde Dauerbetrieb) ist die Verbindung
+     erwartbar weg: Google darf sein Anmeldefenster erst nach einem Klick
+     öffnen, und der erste Klick irgendwo erneuert sie von selbst. Dafür
+     reicht eine leise graue Zeile. Rot wird es erst, wenn wirklich etwas
+     hakt: Der Versuch beim Klicken ist gescheitert, oder vorgemerkte
+     Änderungen warten schon länger als 5 Minuten. */
+  const ohneVerbindung = gAuthChecked && warVerbunden && !gSignedIn();
+  const hakt = gGestureFailed || (gPendingSince && Date.now() - gPendingSince > 5 * 60000);
+  if (ohneVerbindung && !hakt) {
+    box.append(el("p", "g-quiet", gTokenWait ? "Google wird verbunden …" : "Google verbindet sich beim ersten Klick."));
+  }
+  else if (ohneVerbindung && !gTokenWait && !alarmMuted("auth")) {
     box.append(alarmBox("red", "⚠️",
       "Nicht mit Google verbunden",
       "Änderungen werden gerade nicht in Google Drive gesichert und nicht auf deine anderen Geräte übertragen. Sie bleiben vorgemerkt und gehen hoch, sobald die Verbindung steht."
@@ -5092,7 +5104,10 @@ async function gEnsureToken(interactive) {
    3. Was in der Zwischenzeit geändert wurde, bleibt vorgemerkt und geht hoch,
       sobald der neue Schlüssel da ist. */
 let gRefreshTimer = null, gLastRenew = 0, gLastGestureTry = 0;
+let gGestureFailed = false;   // Erneuern per Klick ist gescheitert → roter Hinweis
+let gPendingSince = 0;        // seit wann Änderungen auf das Hochladen warten
 function gTokenSet() {
+  gGestureFailed = false;
   clearTimeout(gRefreshTimer);
   const wait = Math.max(60000, gTokenExp - Date.now() - 5 * 60000);
   gRefreshTimer = setTimeout(gRenewSilent, wait);
@@ -5111,11 +5126,14 @@ function gGestureRenew(e) {
   if (e && e.target && e.target.closest && e.target.closest("#btn-g-connect, .alarm .go")) return;
   // Eigene Sperre für Versuche per Tippen: Ein gerade gescheiterter lautloser
   // Versuch darf das Tippen nicht blockieren — gerade dann wird es gebraucht.
-  if (Date.now() - gLastGestureTry < 4000) return;
+  // Nur nach einem gescheiterten Versuch kurz warten (laufende Anfragen
+  // verhindert schon gTokenWait).
+  if (gGestureFailed && Date.now() - gLastGestureTry < 4000) return;
   if (!(window.google && google.accounts)) { gLoadScript().catch(() => {}); return; }
   try { gInitClient(); } catch { return; }
   gLastGestureTry = Date.now();
-  gRequestToken("").then(() => gSyncNow(false), () => { gUpdateUI(); renderAlarms(); });
+  renderAlarms();                       // „Google wird verbunden …“
+  gRequestToken("").then(() => gSyncNow(false), () => { gGestureFailed = true; gUpdateUI(); renderAlarms(); });
 }
 document.addEventListener("click", gGestureRenew, true);
 document.addEventListener("keydown", gGestureRenew, true);
@@ -5211,6 +5229,7 @@ let gSyncAgain = false;
 function gPushSoon() {
   if (gApplyingRemote) return;
   gPushPending = true;
+  if (!gPendingSince) gPendingSince = Date.now();
   if (!gWasConnected()) return;
   clearTimeout(gPushTimer);
   gPushTimer = setTimeout(gPushNow, 2500);
@@ -5279,6 +5298,7 @@ async function gSyncNow(showToast) {
     } else if (showToast) toast("Synchronisiert.");
     if (push) { await gDrivePush(); known = { ids: gPushedIds, at: gPushedAt }; }
     if (known) knownSet(known.ids, known.at);
+    if (!gPushPending) gPendingSince = 0;
     markSynced();
     renderAlarms();
     gSetStatus((push ? "Zuletzt gesichert: " : "Zuletzt abgeglichen: ") + new Date().toLocaleTimeString("de-DE"));
@@ -6666,6 +6686,8 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 // Erinnerungen prüfen: beim Start, alle 5 Minuten und beim Zurückkehren in den Tab.
 checkReminder();
 setInterval(() => { checkReminder(); renderWeek(); updateBadge(); }, 5 * 60 * 1000);
+// Wartet etwas ohne Verbindung länger, soll der rote Hinweis auch ohne Klick erscheinen.
+setInterval(() => { if (gPendingSince && !gSignedIn()) renderAlarms(); }, 60 * 1000);
 document.addEventListener("visibilitychange", () => {
   // Beim Weggehen ausstehende Änderungen sofort hochladen, statt auf den
   // Sammel-Countdown zu warten — der überlebt das Schließen nicht.
